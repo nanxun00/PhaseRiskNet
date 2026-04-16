@@ -38,6 +38,11 @@ Example:
 python phase_run.py --include-ablation --quick --gpu 0
 ```
 
+## Data
+
+- **CEED**: loaded and (if needed) downloaded via the Hugging Face `datasets` script `CEED.py` in this repository. When `DATA_SOURCE == "ceed"` (in `phase_core.py`), CEED will be accessed through this script, and Hugging Face will handle caching via `CEED_CACHE_DIR` / default cache paths.
+- **Diting / three-channel H5**: the Diting three-channel H5 dataset should be downloaded from its public release link (follow the official Diting dataset instructions), then placed under the directory pointed to by `H5_THREE_CHANNEL_ROOT`. When `DATA_SOURCE == "h5_three_channel"`, training and evaluation will use this local H5 data.
+
 ## Configuration and Privacy (Environment Variables)
 
 To avoid hard-coding local paths and random seeds in code, set environment variables before running (or export them in your shell / `.env`):
