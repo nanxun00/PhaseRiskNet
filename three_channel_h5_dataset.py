@@ -81,7 +81,7 @@ class ThreeChannelH5Dataset(Dataset):
 
     def __init__(self, root_dir: str, crop_len: int=3000, sampling_rate: float=100.0, label_sigma_sec: float=0.1, label_width: int=51, training: bool=True, file_pattern: str='*.h5', arrival_relative_to_segment: bool=True, filter_natural_only: bool=False, allow_earthquake_types: tuple | None=None, strict_check: bool=False, strict_sr_tol_hz: float=0.001, limit: int | None=None):
         if h5py is None:
-            raise ImportError('请安装 h5py: pip install h5py')
+            raise ImportError('Please install h5py: pip install h5py')
         self.root_dir = os.path.abspath(root_dir)
         self.crop_len = int(crop_len)
         self.sampling_rate = float(sampling_rate)
@@ -167,7 +167,7 @@ class ThreeChannelH5Dataset(Dataset):
                 sr_in_file = _infer_sampling_rate_from_h5_attrs(h5)
                 if sr_in_file is not None:
                     if abs(float(sr_in_file) - float(self.sampling_rate)) > self.strict_sr_tol_hz:
-                        raise ValueError(f"[ThreeChannelH5Dataset strict_check] 采样率不一致：file_sr={sr_in_file}Hz vs expected_sr={self.sampling_rate}Hz (tol={self.strict_sr_tol_hz}Hz), file='{path}'")
+                        raise ValueError(f"[ThreeChannelH5Dataset strict_check] Inconsistent sampling rate:file_sr={sr_in_file}Hz vs expected_sr={self.sampling_rate}Hz (tol={self.strict_sr_tol_hz}Hz), file='{path}'")
             ud_d = h5['waveforms/channel_ud']
             ns_d = h5['waveforms/channel_ns']
             ew_d = h5['waveforms/channel_ew']
@@ -180,10 +180,10 @@ class ThreeChannelH5Dataset(Dataset):
                 ns = np.asarray(ns_d, dtype=np.float32).flatten()
                 ew = np.asarray(ew_d, dtype=np.float32).flatten()
             if ud.size <= 0 or ns.size <= 0 or ew.size <= 0:
-                raise ValueError(f"[ThreeChannelH5Dataset] 空波形数据：file='{path}', seg_idx={seg_idx}")
+                raise ValueError(f"[ThreeChannelH5Dataset] Empty waveform data:file='{path}', seg_idx={seg_idx}")
             T = max(int(ud.size), int(ns.size), int(ew.size))
             if self.strict_check and (not ud.size == ns.size == ew.size):
-                raise ValueError(f"[ThreeChannelH5Dataset strict_check] 三通道长度不一致：ud={ud.size}, ns={ns.size}, ew={ew.size}, file='{path}', seg_idx={seg_idx}")
+                raise ValueError(f"[ThreeChannelH5Dataset strict_check] Inconsistent lengths of the three channels:ud={ud.size}, ns={ns.size}, ew={ew.size}, file='{path}', seg_idx={seg_idx}")
             if ud.size != T:
                 ud = np.resize(ud, T)
             if ns.size != T:
@@ -195,11 +195,11 @@ class ThreeChannelH5Dataset(Dataset):
             p_idx_raw, s_idx_raw = _read_pg_sg_at(h5, seg_idx, sr, self.arrival_relative_to_segment)
             if self.strict_check:
                 if not (np.isfinite(p_idx_raw) and np.isfinite(s_idx_raw)):
-                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] pg/sg 非法（NaN/Inf）：p_idx={p_idx_raw}, s_idx={s_idx_raw}, file='{path}', seg_idx={seg_idx}")
+                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] pg/sg Illegal（NaN/Inf）：p_idx={p_idx_raw}, s_idx={s_idx_raw}, file='{path}', seg_idx={seg_idx}")
                 if not 0 <= int(p_idx_raw) < T:
-                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] P 到时越界：p_idx={p_idx_raw}, T={T}, file='{path}', seg_idx={seg_idx}. 提示：采样率/到时单位/arrival_relative_to_segment 可能不匹配。")
+                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] P exceeded the boundary at that time:p_idx={p_idx_raw}, T={T}, file='{path}', seg_idx={seg_idx}. The sampling rate / time unit / arrival relative to segment may not be consistent.")
                 if not 0 <= int(s_idx_raw) < T:
-                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] S 到时越界：s_idx={s_idx_raw}, T={T}, file='{path}', seg_idx={seg_idx}. 提示：采样率/到时单位/arrival_relative_to_segment 可能不匹配。")
+                    raise ValueError(f"[ThreeChannelH5Dataset strict_check] S exceeded the boundary at that time:s_idx={s_idx_raw}, T={T}, file='{path}', seg_idx={seg_idx}. The sampling rate / time unit / arrival relative to segment may not be consistent.")
             p_idx = max(0, min(T - 1, int(p_idx_raw)))
             s_idx = max(0, min(T - 1, int(s_idx_raw)))
         if T >= self.crop_len:
@@ -221,11 +221,11 @@ class ThreeChannelH5Dataset(Dataset):
             s_in_win = s_idx + pad_left
         if self.strict_check:
             if x_win.shape[0] != self.crop_len or x_win.shape[1] != 3:
-                raise ValueError(f"[ThreeChannelH5Dataset strict_check] 裁剪/补零后形状异常：x_win.shape={x_win.shape}, expected=({self.crop_len},3), file='{path}', seg_idx={seg_idx}")
+                raise ValueError(f"[ThreeChannelH5Dataset strict_check] Abnormal shape after trimming/zeros padding:x_win.shape={x_win.shape}, expected=({self.crop_len},3), file='{path}', seg_idx={seg_idx}")
             if not 0 <= int(p_in_win) < self.crop_len:
-                raise ValueError(f"[ThreeChannelH5Dataset strict_check] P 在窗口内越界：p_in_win={p_in_win}, crop_len={self.crop_len}, file='{path}', seg_idx={seg_idx}")
+                raise ValueError(f"[ThreeChannelH5Dataset strict_check] P has exceeded the boundary within the window:p_in_win={p_in_win}, crop_len={self.crop_len}, file='{path}', seg_idx={seg_idx}")
             if not 0 <= int(s_in_win) < self.crop_len:
-                raise ValueError(f"[ThreeChannelH5Dataset strict_check] S 在窗口内越界：s_in_win={s_in_win}, crop_len={self.crop_len}, file='{path}', seg_idx={seg_idx}")
+                raise ValueError(f"[ThreeChannelH5Dataset strict_check] S has exceeded the boundary within the window:s_in_win={s_in_win}, crop_len={self.crop_len}, file='{path}', seg_idx={seg_idx}")
         y = np.zeros((self.crop_len, 3), dtype=np.float32)
         if 0 <= p_in_win < self.crop_len:
             self._fill_label(y, int(p_in_win), 1)

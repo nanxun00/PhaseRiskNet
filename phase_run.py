@@ -16,10 +16,10 @@ ABLATION_CONFIGS: Dict[str, Dict] = {'phasenet_full_big': {'name': 'phasenet_ful
 
 
 def run_test(config: Dict, quick_mode: bool=False) -> Dict:
-    print_separator(f'测试: {config['name']}')
-    print(f'[{config['name']}] 准备数据与模型...', flush=True)
+    print_separator(f'Test: {config['name']}')
+    print(f'[{config['name']}] Preparing data and model...', flush=True)
     if quick_mode:
-        print('⚠️  快速模式：小数据集 + 少量 epoch', flush=True)
+        print('⚠️  Quick mode: small dataset + few epochs', flush=True)
         _ep = core.EPOCHS
         core.EPOCHS = 5
         try:
@@ -28,58 +28,58 @@ def run_test(config: Dict, quick_mode: bool=False) -> Dict:
             core.EPOCHS = _ep
     else:
         result = run_case(config)
-    print(f'[{config['name']}] 完成。', flush=True)
+    print(f'[{config['name']}] Completed.', flush=True)
     return result
 
 def main():
     print('=' * 80, flush=True)
-    print('adaptive/phase_run.py 启动（PhaseNetUNet 主干）', flush=True)
-    print(f'工作目录: {os.getcwd()}', flush=True)
+    print('adaptive/phase_run.py started (PhaseNetUNet backbone)', flush=True)
+    print(f'Working directory: {os.getcwd()}', flush=True)
     print('=' * 80, flush=True)
-    parser = argparse.ArgumentParser(description='PhaseNetUNet 主干消融测试')
-    parser.add_argument('--quick', action='store_true', help='快速测试（小数据、少 epoch）')
-    parser.add_argument('--gpu', type=str, default=None, help='GPU ID，如 0 或 0,1,2,3（设置 CUDA_VISIBLE_DEVICES）')
-    parser.add_argument('--include-ablation', action='store_true', help='是否运行消融配置（不含 baseline）')
-    parser.add_argument('--ablation-keys', type=str, default=None, help='仅跑指定 key，逗号分隔')
-    parser.add_argument('--skip-baseline', action='store_true', help='只跑消融配置，跳过 baseline')
-    parser.add_argument('--seed', type=int, default=SEED, help='全局随机种子')
+    parser = argparse.ArgumentParser(description='PhaseNetUNet backbone ablation test')
+    parser.add_argument('--quick', action='store_true', help='Quick test (small data, few epochs)')
+    parser.add_argument('--gpu', type=str, default=None, help='GPU ID, such as 0 or 0,1,2,3 (set CUDA_VISIBLE_DEVICES)')
+    parser.add_argument('--include-ablation', action='store_true', help='Whether to run ablation configurations (excluding baseline)')
+    parser.add_argument('--ablation-keys', type=str, default=None, help='Run only specified keys, comma-separated')
+    parser.add_argument('--skip-baseline', action='store_true', help='Run only ablation configurations, skip baseline')
+    parser.add_argument('--seed', type=int, default=SEED, help='Global random seed')
     args = parser.parse_args()
     if args.gpu is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
-        print(f'[phase] 指定可见 GPU: {args.gpu}', flush=True)
+        print(f'[phase] Specified visible GPU: {args.gpu}', flush=True)
     core.SEED = args.seed
-    print(f'[phase] 使用随机种子: {args.seed}', flush=True)
+    print(f'[phase] Using random seed: {args.seed}', flush=True)
     seed_everything(args.seed, deterministic=True)
     results: Dict[str, Dict] = {}
     if args.skip_baseline:
-        print('步骤1: 已指定 --skip-baseline，跳过 PhaseNet Baseline。', flush=True)
+        print('Step 1: --skip-baseline specified, skipping PhaseNet Baseline.', flush=True)
     elif 'phasenet_baseline' not in ABLATION_CONFIGS:
-        print('步骤1: 未找到 phasenet_baseline 配置，自动跳过 baseline。', flush=True)
+        print('Step 1: phasenet_baseline configuration not found, automatically skipping baseline.', flush=True)
     else:
-        print_separator('步骤1: PhaseNet Baseline')
+        print_separator('Step 1: PhaseNet Baseline')
         results['baseline'] = run_test(ABLATION_CONFIGS['phasenet_baseline'], quick_mode=args.quick)
         append_csv(METRICS_CSV, METRICS_HEADER, [results['baseline']])
     test_configs: Dict[str, Dict] = {}
     if args.include_ablation:
-        print_separator('步骤2: 消融实验（PhaseNet 扩展）')
+        print_separator('Step 2: Ablation Experiments (PhaseNet Extended)')
         if args.ablation_keys:
             keys = [k.strip() for k in args.ablation_keys.split(',') if k.strip()]
             for k in keys:
                 if k in ABLATION_CONFIGS and k != 'phasenet_baseline':
                     test_configs[k] = ABLATION_CONFIGS[k]
                 else:
-                    print(f"警告: 未知或跳过 key '{k}'")
-            print(f'将运行指定 {len(test_configs)} 个消融配置。')
+                    print(f"Warning: Unknown or skipped key '{k}'")
+            print(f'Will run specified {len(test_configs)} ablation configurations.')
         else:
             test_configs = {k: v for k, v in ABLATION_CONFIGS.items() if k != 'phasenet_baseline'}
-            print(f'将运行全部 {len(test_configs)} 个消融配置（未指定 --ablation-keys 时默认跑全部）。')
+            print(f'Will run all {len(test_configs)} ablation configurations (default when --ablation-keys is not specified).')
     else:
-        print('步骤2: 未指定 --include-ablation，跳过消融。')
+        print('Step 2: --include-ablation not specified, skipping ablation.')
     for key, cfg in test_configs.items():
-        print(f'\n测试: {key}')
+        print(f'\nTest: {key}')
         results[key] = run_test(cfg, quick_mode=args.quick)
         append_csv(METRICS_CSV, METRICS_HEADER, [results[key]])
-    print_separator('测试完成')
+    print_separator('Testing complete')
 
 
 if __name__ == '__main__':

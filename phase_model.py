@@ -66,7 +66,7 @@ class TemporalBiFPNASFF(nn.Module):
     def __init__(self, channels: list[int]) -> None:
         super().__init__()
         if len(channels) < 3:
-            raise ValueError('TemporalBiFPNASFF 期望至少 3 个尺度特征。')
+            raise ValueError('TemporalBiFPNASFF expects at least 3 scale features.')
         c1, c2, c3, c4, *rest = channels
         c5 = rest[0] if rest else c4
         self.conv4 = DepthwiseSeparableConv1d(c5 + c4, c4, k=3, dropout=0.0)

@@ -10,7 +10,7 @@ _DESCRIPTION = 'A dataset of earthquake waveforms organized by earthquake events
 _HOMEPAGE = ''
 _LICENSE = ''
 _REPO_NC = 'https://huggingface.co/datasets/AI4EPS/quakeflow_nc/resolve/main/waveform_h5'
-_FILES_NC = ['2022.h5']
+_FILES_NC = ''
 _REPO_SC = 'https://huggingface.co/datasets/AI4EPS/quakeflow_sc/resolve/main/waveform_h5'
 _FILES_SC = []
 _URLS_2002 = {'full': [f'{_REPO_NC}/{x}' for x in _FILES_NC]}
@@ -75,9 +75,9 @@ class CEED(datasets.GeneratorBasedBuilder):
         split_idx = int(len(shuffled_events) * train_ratio)
         train_events = shuffled_events[:split_idx]
         test_events = shuffled_events[split_idx:]
-        print(f'总事件数: {len(all_events)}')
-        print(f'训练集事件数: {len(train_events)}')
-        print(f'测试集事件数: {len(test_events)}')
+        print(f'Total number of events: {len(all_events)}')
+        print(f'Number of events in the training set: {len(train_events)}')
+        print(f'Number of test set events: {len(test_events)}')
         return (train_events, test_events)
 
     def _generate_examples(self, filepath, split, selected_events=None):

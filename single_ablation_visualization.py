@@ -526,9 +526,9 @@ def plot_failure_samples_from_npz(npz_path: str, meta_path: str, out_dir: str) -
     if n == 0:
         return
     if n != len(x_np) or n != len(etp) or n != len(ets):
-        raise ValueError(f'failure_samples 与 meta 长度不一致: npz 样本数={len(x_np)}, names={n}, etp={len(etp)}, ets={len(ets)}')
+        raise ValueError(f'Inconsistent length between failure_samples and meta: npz samples={len(x_np)}, names={n}, etp={len(etp)}, ets={len(ets)}')
     if len(groups) != n or len(subtypes) != n:
-        raise ValueError('failure_sample_meta.json 中 group / subtype 长度与样本数不一致。')
+        raise ValueError('The length of group / subtype in failure_sample_meta.json is inconsistent with the number of samples.')
     cnt_typ_sfp = cnt_typ_pfn = 0
     cnt_high_wrong = cnt_high_correct = 0
     for i in range(n):
@@ -714,7 +714,7 @@ def plot_pca_visualization(features: np.ndarray, labels: np.ndarray, out_path: s
     if plt is None:
         return
     if PCA is None:
-        print('PCA 可视化跳过（sklearn 未安装，from sklearn.decomposition import PCA 失败）')
+        print('PCA visualization skipped (sklearn not installed, from sklearn.decomposition import PCA failed)')
         return
     if features.size == 0 or len(features) < 2:
         return

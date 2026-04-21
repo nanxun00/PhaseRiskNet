@@ -100,7 +100,7 @@ PLATEAU_MIN_LR = 1e-06
 PLATEAU_THRESHOLD = 0.0001
 
 def _write_comparison_format(case_dir: str) -> None:
-    fmt = {'description': '将对比方法的数据按下列格式写入同目录，运行 plot_paper_figures.py --compare 可绘制多方法对比图。', 'pr_snr_data': {'filename_pattern': 'pr_snr_data_<method>.json（如 pr_snr_data_ar.json）', 'keys': ['has_p', 'has_s', 'max_prob_p', 'max_prob_s', 'p_ok', 's_ok', 'snr'], 'key_descriptions': {'has_p': 'bool list, 每样本是否有 P 波真值', 'has_s': 'bool list, 每样本是否有 S 波真值', 'max_prob_p': 'float list, 每样本 P 通道最大概率', 'max_prob_s': 'float list, 每样本 S 通道最大概率', 'p_ok': 'bool list, 每样本 P 拾取是否在容差内正确', 's_ok': 'bool list, 每样本 S 拾取是否在容差内正确', 'snr': 'float list, 每样本 SNR (dB)'}}, 'time_residuals': {'filename_pattern': 'time_residuals_<method>.json（如 time_residuals_ar.json）', 'keys': ['p_residuals_signed', 's_residuals_signed'], 'key_descriptions': {'p_residuals_signed': 'float list, P 波预测索引 − 真值索引（样本数）', 's_residuals_signed': 'float list, S 波预测索引 − 真值索引（样本数）'}}, 'pca': {'filename_pattern': 'pca_<method>.npz（如 pca_ar.npz）', 'arrays': ['features', 'labels'], 'descriptions': {'features': 'shape (N, D), 每样本特征向量（12 维：max_p, max_s, mean_p, mean_s, std_p, std_s, entropy_p, entropy_s, peak_width_p, peak_width_s, margin_p, margin_s）', 'labels': 'shape (N,) int, 0=无震相 1=P_only 2=S_only 3=P+S'}}}
+    fmt = {'description': 'Write comparison method data in the following format to the same directory. Running plot_paper_figures.py --compare will generate multi-method comparison plots.', 'pr_snr_data': {'filename_pattern': 'pr_snr_data_<method>.json (e.g. pr_snr_data_ar.json)', 'keys': ['has_p', 'has_s', 'max_prob_p', 'max_prob_s', 'p_ok', 's_ok', 'snr'], 'key_descriptions': {'has_p': 'bool list, whether each sample has P wave ground truth', 'has_s': 'bool list, whether each sample has S wave ground truth', 'max_prob_p': 'float list, maximum probability of P channel for each sample', 'max_prob_s': 'float list, maximum probability of S channel for each sample', 'p_ok': 'bool list, whether P picking is correct within tolerance for each sample', 's_ok': 'bool list, whether S picking is correct within tolerance for each sample', 'snr': 'float list, SNR (dB) for each sample'}}, 'time_residuals': {'filename_pattern': 'time_residuals_<method>.json (e.g. time_residuals_ar.json)', 'keys': ['p_residuals_signed', 's_residuals_signed'], 'key_descriptions': {'p_residuals_signed': 'float list, P wave predicted index − ground truth index (sample count)', 's_residuals_signed': 'float list, S wave predicted index − ground truth index (sample count)'}}, 'pca': {'filename_pattern': 'pca_<method>.npz (e.g. pca_ar.npz)', 'arrays': ['features', 'labels'], 'descriptions': {'features': 'shape (N, D), feature vector for each sample (12 dimensions: max_p, max_s, mean_p, mean_s, std_p, std_s, entropy_p, entropy_s, peak_width_p, peak_width_s, margin_p, margin_s)', 'labels': 'shape (N,) int, 0=no phase 1=P_only 2=S_only 3=P+S'}}}
     with open(os.path.join(case_dir, 'comparison_data_format.json'), 'w', encoding='utf-8') as f:
         json.dump(fmt, f, ensure_ascii=False, indent=2)
 
@@ -356,14 +356,14 @@ def build_datasets(case: Dict[str, Any]=None):
         cache_key = _get_split_cache_key(use_waveform_aug, aug_params)
         if cache_key in _dataset_split_cache:
             train_idx, val_idx = _dataset_split_cache[cache_key]
-            print(f'[build_datasets] ✓ 使用缓存的 CEED 划分（train={len(train_idx)}, val={len(val_idx)}），test 使用独立 test split')
+            print(f'[build_datasets] ✓ Using cached CEED split (train={len(train_idx)}, val={len(val_idx)}), test uses independent test split')
             full_train_ds_aug = CEEDDataset(dataset_name=CEED_DATASET_NAME, split=CEED_TRAIN_SPLIT, limit=CEED_LIMIT_TRAIN, waveform_key=CEED_WAVEFORM_KEY, p_key=CEED_P_KEY, s_key=CEED_S_KEY, sampling_rate=SAMPLE_RATE, crop_len=CROP_LEN, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=True, local_dir=CEED_LOCAL_DIR, use_waveform_augmentation=use_waveform_aug, aug_noise_snr_db_min=aug_noise_min, aug_noise_snr_db_max=aug_noise_max, aug_amplitude_min=aug_amp_min, aug_amplitude_max=aug_amp_max)
         else:
-            print(f'[build_datasets] CEED：从 train split 加载（limit={CEED_LIMIT_TRAIN}），9:1 划分训练/验证；test 使用 test split')
+            print(f'[build_datasets] CEED: loading from train split (limit={CEED_LIMIT_TRAIN}), 9:1 split for training/validation; test uses test split')
             full_train_ds_aug = CEEDDataset(dataset_name=CEED_DATASET_NAME, split=CEED_TRAIN_SPLIT, limit=CEED_LIMIT_TRAIN, waveform_key=CEED_WAVEFORM_KEY, p_key=CEED_P_KEY, s_key=CEED_S_KEY, sampling_rate=SAMPLE_RATE, crop_len=CROP_LEN, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=True, local_dir=CEED_LOCAL_DIR, use_waveform_augmentation=use_waveform_aug, aug_noise_snr_db_min=aug_noise_min, aug_noise_snr_db_max=aug_noise_max, aug_amplitude_min=aug_amp_min, aug_amplitude_max=aug_amp_max)
             n_full = len(full_train_ds_aug)
             if n_full < 2:
-                raise ValueError(f'CEED train 样本不足（{n_full}），至少需要 2 条')
+                raise ValueError(f'Insufficient CEED train samples ({n_full}), at least 2 are needed')
             val_size = max(1, int(n_full * CEED_VAL_RATIO))
             train_size = n_full - val_size
             g = torch.Generator().manual_seed(SEED)
@@ -371,7 +371,7 @@ def build_datasets(case: Dict[str, Any]=None):
             train_idx = perm[:train_size].tolist()
             val_idx = perm[train_size:].tolist()
             _dataset_split_cache[cache_key] = (train_idx, val_idx)
-            print(f'[build_datasets] ✓ CEED train 划分完成并已缓存（train={train_size}, val={val_size}）')
+            print(f'[build_datasets] ✓ CEED train split completed and cached (train={train_size}, val={val_size})')
         train_ds = Subset(full_train_ds_aug, train_idx)
         full_train_ds_clean = CEEDDataset(dataset_name=CEED_DATASET_NAME, split=CEED_TRAIN_SPLIT, limit=CEED_LIMIT_TRAIN, waveform_key=CEED_WAVEFORM_KEY, p_key=CEED_P_KEY, s_key=CEED_S_KEY, sampling_rate=SAMPLE_RATE, crop_len=CROP_LEN, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=False, local_dir=CEED_LOCAL_DIR)
         valid_ds = Subset(full_train_ds_clean, val_idx)
@@ -384,25 +384,25 @@ def build_datasets(case: Dict[str, Any]=None):
         cache_key = _get_split_cache_key(False, ())
         if cache_key in _dataset_split_cache:
             train_idx, val_idx, test_idx = _dataset_split_cache[cache_key]
-            print(f'[build_datasets] ✓ 使用缓存的三通道 H5 划分（train={len(train_idx)}, val={len(val_idx)}, test={len(test_idx)}）')
+            print(f'[build_datasets] ✓ Using cached three-channel H5 split (train={len(train_idx)}, val={len(val_idx)}, test={len(test_idx)})')
         else:
             full_ds = ThreeChannelH5Dataset(root_dir=H5_THREE_CHANNEL_ROOT, crop_len=CROP_LEN, sampling_rate=SAMPLE_RATE, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=True, arrival_relative_to_segment=H5_ARRIVAL_RELATIVE_TO_SEGMENT, filter_natural_only=H5_FILTER_NATURAL_ONLY, allow_earthquake_types=H5_ALLOW_TYPES, strict_check=H5_STRICT_CHECK, limit=H5_LIMIT)
             n_full = len(full_ds)
             if n_full < 2:
-                raise ValueError(f'三通道 H5 样本数不足（{n_full}），无法划分')
+                raise ValueError(f'Insufficient three-channel H5 samples ({n_full}), unable to split')
             test_size = int(n_full * H5_TEST_RATIO) if H5_TEST_RATIO and H5_TEST_RATIO > 0 else 0
             remainder = n_full - test_size
             val_size = max(1, int(remainder * (1 - H5_TRAIN_VAL_RATIO)))
             train_size = remainder - val_size
             if train_size < 1:
-                raise ValueError(f'三通道 H5 划分后训练集为空（n_full={n_full}, test={test_size}, val={val_size}）')
+                raise ValueError(f'Three-channel H5 training set is empty after split (n_full={n_full}, test={test_size}, val={val_size})')
             g = torch.Generator().manual_seed(SEED)
             perm = torch.randperm(n_full, generator=g)
             test_idx = perm[n_full - test_size:].tolist() if test_size > 0 else []
             train_idx = perm[:train_size].tolist()
             val_idx = perm[train_size:train_size + val_size].tolist()
             _dataset_split_cache[cache_key] = (train_idx, val_idx, test_idx)
-            print(f'[build_datasets] ✓ 三通道 H5 划分完成（先划出 test={len(test_idx)}，剩余 9:1 → train={train_size}, val={val_size}）')
+            print(f'[build_datasets] ✓ Three-channel H5 split completed (first split test={len(test_idx)}, remaining 9:1 → train={train_size}, val={val_size})')
         full_train_ds = ThreeChannelH5Dataset(root_dir=H5_THREE_CHANNEL_ROOT, crop_len=CROP_LEN, sampling_rate=SAMPLE_RATE, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=True, arrival_relative_to_segment=H5_ARRIVAL_RELATIVE_TO_SEGMENT, filter_natural_only=H5_FILTER_NATURAL_ONLY, allow_earthquake_types=H5_ALLOW_TYPES, strict_check=H5_STRICT_CHECK, limit=H5_LIMIT)
         full_valid_ds = ThreeChannelH5Dataset(root_dir=H5_THREE_CHANNEL_ROOT, crop_len=CROP_LEN, sampling_rate=SAMPLE_RATE, label_sigma_sec=LABEL_SIGMA_SEC, label_width=LABEL_WIDTH, training=False, arrival_relative_to_segment=H5_ARRIVAL_RELATIVE_TO_SEGMENT, filter_natural_only=H5_FILTER_NATURAL_ONLY, allow_earthquake_types=H5_ALLOW_TYPES, strict_check=H5_STRICT_CHECK, limit=H5_LIMIT)
         train_idx_use = train_idx[:H5_LIMIT_TRAIN] if H5_LIMIT_TRAIN is not None else train_idx
@@ -478,14 +478,14 @@ def best_threshold(confs, errs, has_gts, tol: int, grid: list[float], debug: boo
     samples_with_gt = sum(has_gts)
     samples_without_gt = total_samples - samples_with_gt
     if debug and total_samples > 0:
-        print(f'  总样本数: {total_samples}, 有标签: {samples_with_gt}, 无标签: {samples_without_gt}')
+        print(f'  Total samples: {total_samples}, with labels: {samples_with_gt}, without labels: {samples_without_gt}')
         if samples_with_gt > 0:
             valid_errs = [e for e, h in zip(errs, has_gts) if h and e is not None]
             if valid_errs:
-                print(f'  有效误差统计: mean={np.mean(valid_errs):.1f}, min={np.min(valid_errs)}, max={np.max(valid_errs)}, <=tol({tol})的比例={np.mean(np.array(valid_errs) <= tol):.1%}')
+                print(f'  Valid error statistics: mean={np.mean(valid_errs):.1f}, min={np.min(valid_errs)}, max={np.max(valid_errs)}, proportion <=tol({tol})={np.mean(np.array(valid_errs) <= tol):.1%}')
             valid_confs = [c for c, h in zip(confs, has_gts) if h]
             if valid_confs:
-                print(f'  有标签样本的置信度统计: mean={np.mean(valid_confs):.3f}, min={np.min(valid_confs):.3f}, max={np.max(valid_confs):.3f}')
+                print(f'  Confidence statistics for labeled samples: mean={np.mean(valid_confs):.3f}, min={np.min(valid_confs):.3f}, max={np.max(valid_confs):.3f}')
     for thr in grid:
         tp = fp = fn = 0
         for c, e, h in zip(confs, errs, has_gts):
@@ -507,7 +507,7 @@ def best_threshold(confs, errs, has_gts, tol: int, grid: list[float], debug: boo
         best_f1 = 0.0
     if debug and best_stats:
         tp, fp, fn, prec, rec, f1 = best_stats
-        print(f'  最佳阈值={best_thr:.3f}: TP={tp}, FP={fp}, FN={fn}, Prec={prec:.4f}, Rec={rec:.4f}, F1={f1:.4f}')
+        print(f'  Best threshold={best_thr:.3f}: TP={tp}, FP={fp}, FN={fn}, Prec={prec:.4f}, Rec={rec:.4f}, F1={f1:.4f}')
     return (best_thr, best_f1)
 
 @torch.inference_mode()
@@ -690,7 +690,7 @@ def eval_detailed(model, loader, device, thr_p: float=None, thr_s: float=None, u
         s_conf_arr = np.array(s_conf_list)
         s_thr_arr = np.array(s_thr_list)
         above = np.sum(s_conf_arr >= s_thr_arr)
-        print(f'[eval_detailed] S-F1=0 诊断（有S样本）: S预测概率 mean={s_conf_arr.mean():.4f}, min={s_conf_arr.min():.4f}, max={s_conf_arr.max():.4f} | 预测S阈值 mean={s_thr_arr.mean():.4f}, min={s_thr_arr.min():.4f}, max={s_thr_arr.max():.4f} | s_c>=thr_s 的样本数={above}/{len(s_conf_list)}', flush=True)
+        print(f'[eval_detailed] S-F1=0 diagnosis (samples with S): S predicted probability mean={s_conf_arr.mean():.4f}, min={s_conf_arr.min():.4f}, max={s_conf_arr.max():.4f} | predicted S threshold mean={s_thr_arr.mean():.4f}, min={s_thr_arr.min():.4f}, max={s_thr_arr.max():.4f} | samples with s_c>=thr_s={above}/{len(s_conf_list)}', flush=True)
 
     def _prf(tp, fp, fn):
         p = tp / max(1, tp + fp)
@@ -1709,7 +1709,7 @@ def save_representative_waveforms_2x2(model: nn.Module, valid_loader: DataLoader
             s_very2 = _fallback_pick2(['very_low', 'low', 'normal', 'missing'])
             s_miss2 = _fallback_pick2(['missing', 'normal', 'low', 'very_low'])
             if not (s_normal2 and s_low2 and s_very2 and s_miss2):
-                print('[save_representative_waveforms_2x2] representative_compare.npz: 未能找到完整的第二批样本，跳过导出', flush=True)
+                print('[save_representative_waveforms_2x2] representative_compare.npz: Unable to find complete second batch of samples, skip export', flush=True)
                 return
             samples2 = [s_normal2, s_low2, s_very2, s_miss2]
             x_list = np.stack([s[0] for s in samples2], axis=0)
@@ -1717,9 +1717,9 @@ def save_representative_waveforms_2x2(model: nn.Module, valid_loader: DataLoader
             snr_list = np.array([float(s[4]) for s in samples2], dtype=float)
             name_list = np.array(['normal', 'low', 'very_low', 'missing'], dtype=object)
             np.savez(rep_npz_path, x_list=x_list, y_list=y_list, snr_list=snr_list, names=name_list)
-            print(f'[save_representative_waveforms_2x2] 代表性样本（第二批）已保存: {rep_npz_path}', flush=True)
+            print(f'[save_representative_waveforms_2x2] Representative samples (second batch) saved: {rep_npz_path}', flush=True)
         except Exception as e:
-            print(f'[save_representative_waveforms_2x2] 保存 representative_compare.npz 失败: {e}', flush=True)
+            print(f'[save_representative_waveforms_2x2] Failed to save representative_compare.npz: {e}', flush=True)
 
 def _compute_error_label(pass_mask: bool, ok_mask: bool, has_label: bool) -> str:
     if not has_label:
@@ -1976,7 +1976,7 @@ def plot_dynamic_threshold_pipeline(model, loader, device, out_dir: str, top_k_e
                     exception_indices.append(len(sample_indices) - 1)
             batch_offset += B
     if len(thresholds_p) == 0:
-        print('[plot_dynamic_threshold_pipeline] 没有收集到数据，跳过', flush=True)
+        print('[plot_dynamic_threshold_pipeline] No data collected, skip', flush=True)
         return
     thresholds_p = np.array(thresholds_p)
     thresholds_s = np.array(thresholds_s)
@@ -2053,9 +2053,9 @@ def plot_dynamic_threshold_pipeline(model, loader, device, out_dir: str, top_k_e
     out_path = os.path.join(out_dir, 'dynamic_threshold_pipeline.png')
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
-    print(f'[INFO] 论文级动态阈值图已生成：{out_path}', flush=True)
+    print(f'[INFO] Paper-level dynamic threshold figure generated: {out_path}', flush=True)
     if len(waveforms_list) == 0:
-        print(f'[INFO] 没有异常样本（FP/FN），跳过异常样本波形图', flush=True)
+        print(f'[INFO] No anomalous samples (FP/FN), skip anomalous sample waveform plot', flush=True)
     else:
         waveforms_arr = np.array(waveforms_list)
         probs_p_arr = np.array(probs_p_list)
@@ -2121,32 +2121,32 @@ def plot_dynamic_threshold_pipeline(model, loader, device, out_dir: str, top_k_e
                     sample_out_path = os.path.join(out_dir, f'{wave_type}_{etype}_sample_{orig_idx}_rank{rank + 1}.png')
                     fig.savefig(sample_out_path, dpi=300, bbox_inches='tight')
                     plt.close(fig)
-        print(f'[INFO] 异常样本波形图已生成（每类波 top-{top_k_exceptions} FP/FN）', flush=True)
+        print(f'[INFO] Anomalous sample waveform plot generated (top-{top_k_exceptions} FP/FN for each phase type)', flush=True)
 
 def run_case(case: Dict[str, Any]):
     case_seed = case.get('seed', SEED)
     seed_everything(case_seed, deterministic=True)
     eval_only = bool(case.get('eval_only', False))
-    print(f'[{case['name']}] 初始化设备...', flush=True)
-    print(f'[{case['name']}] 使用随机种子: {case_seed}', flush=True)
+    print(f'[{case['name']}] Initializing device...', flush=True)
+    print(f'[{case['name']}] Using random seed: {case_seed}', flush=True)
     cuda_ok = torch.cuda.is_available()
     if cuda_ok:
         device = torch.device('cuda')
         try:
-            print(f'[{case['name']}] 使用设备: {device} ({torch.cuda.get_device_name(0)})', flush=True)
+            print(f'[{case['name']}] Using device: {device} ({torch.cuda.get_device_name(0)})', flush=True)
         except Exception:
-            print(f'[{case['name']}] 使用设备: {device}', flush=True)
+            print(f'[{case['name']}] Using device: {device}', flush=True)
     else:
         device = torch.device('cpu')
-        print(f'[{case['name']}] 使用设备: {device}（未检测到可用 CUDA，若需 GPU 请检查 PyTorch 是否为 GPU 版及驱动）', flush=True)
-    print(f'[{case['name']}] 加载数据集...', flush=True)
+        print(f'[{case['name']}] Using device: {device} (No available CUDA detected. If GPU is needed, check if PyTorch is GPU version and drivers are installed)', flush=True)
+    print(f'[{case['name']}] Loading dataset...', flush=True)
     train_ds, valid_ds, test_ds = build_datasets(case)
-    print(f'[{case['name']}] 数据集加载完成: 训练集={len(train_ds)}, 验证集={len(valid_ds)}' + (f', 测试集={len(test_ds)}' if test_ds is not None else ''), flush=True)
+    print(f'[{case['name']}] Dataset loading completed: train={len(train_ds)}, validation={len(valid_ds)}' + (f', test={len(test_ds)}' if test_ds is not None else ''), flush=True)
     g_train = torch_generator(case_seed)
     g_valid = torch_generator(case_seed + 1)
     batch_size = case.get('batch_size', BATCH_SIZE)
     if batch_size != BATCH_SIZE:
-        print(f'[{case['name']}] 使用 batch_size={batch_size}（默认 {BATCH_SIZE}）', flush=True)
+        print(f'[{case['name']}] Using batch_size={batch_size} (default {BATCH_SIZE})', flush=True)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_train)
     valid_loader = DataLoader(valid_ds, batch_size=batch_size, shuffle=False, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_valid)
     run_name = f'{case['name']}_seed{case_seed}'
@@ -2156,7 +2156,7 @@ def run_case(case: Dict[str, Any]):
     _drop_rate = case.get('drop_rate', case.get('dropout', 0.0))
     _pool_size = case.get('pool_size', 4)
     model_cfg = dict(in_ch=3, n_class=3, depths=case.get('depths', 5), filters_root=case.get('filters_root', 8), kernels=case.get('kernels', (7,)), pool_size=_pool_size, drop_rate=_drop_rate, use_cbam=case.get('use_cbam', False), use_separable=case.get('use_separable', False), fusion_mode=case.get('fusion_mode', 'concat'), fusion_gate_hidden=case.get('fusion_gate_hidden', 16), fusion_residual_scale=case.get('fusion_residual_scale', 0.3), fusion_use_maxpool=case.get('fusion_use_maxpool', True), softgate_scope=case.get('softgate_scope', 'all'), use_temporal_bifpn_asff=case.get('use_temporal_bifpn_asff', False), cbam_modulate_softgate=case.get('cbam_modulate_softgate', True), cbam_softgate_strength=float(case.get('cbam_softgate_strength', 1.0)))
-    print(f'[{case['name']}] 构建模型...', flush=True)
+    print(f'[{case['name']}] Building model...', flush=True)
     model_cls = MODEL_CLASS_MAP.get(case.get('model_class', 'PhaseNetUNet'), PhaseNetUNet)
     try:
         _sig = inspect.signature(model_cls.__init__)
@@ -2164,7 +2164,7 @@ def run_case(case: Dict[str, Any]):
         _filtered_model_cfg = {k: v for k, v in model_cfg.items() if k in _accepted}
         _dropped = sorted(set(model_cfg.keys()) - set(_filtered_model_cfg.keys()))
         if _dropped:
-            print(f'[run_case] 跳过当前 PhaseNetUNet 不支持的参数: {_dropped}', flush=True)
+            print(f'[run_case] Skipping unsupported PhaseNetUNet parameters: {_dropped}', flush=True)
     except Exception:
         _filtered_model_cfg = model_cfg
     model = model_cls(**_filtered_model_cfg).to(device)
@@ -2183,7 +2183,7 @@ def run_case(case: Dict[str, Any]):
     n_dropout = sum((1 for m in model.modules() if 'Dropout' in m.__class__.__name__))
     params = sum((p.numel() for p in model.parameters()))
     size_mb = params * 4.0 / 1024.0 ** 2
-    print(f'[{case['name']}] 模型构建完成，参数量: {params / 1000000.0:.2f}M (~{params / 1000.0:.1f}k)，size≈{size_mb:.2f}MB', flush=True)
+    print(f'[{case['name']}] Model building completed, parameters: {params / 1000000.0:.2f}M (~{params / 1000.0:.1f}k), size≈{size_mb:.2f}MB', flush=True)
     print(f'[{case['name']}] has_dropout_modules: {has_dropout}, dropout_count: {n_dropout}', flush=True)
     total_epochs = EPOCHS
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
@@ -2201,14 +2201,14 @@ def run_case(case: Dict[str, Any]):
     if eval_only:
         best_path = os.path.join(case_dir, 'best_model.pt')
         if os.path.exists(best_path):
-            print(f'[{case['name']}] eval_only=True，加载已有最优模型: {best_path}', flush=True)
+            print(f'[{case['name']}] eval_only=True,Loading the existing optimal model: {best_path}', flush=True)
             state = torch.load(best_path, map_location=device)
             model.load_state_dict(state)
             tr_hist = [0.0]
             va_hist = [0.0]
             best = 0.0
         else:
-            print(f'[{case['name']}] eval_only=True 但未找到 {best_path}，将执行正常训练流程。', flush=True)
+            print(f'[{case['name']}] eval_only=True but no result was found. {best_path}, the normal training process will be carried out.', flush=True)
             eval_only = False
     if not eval_only:
         enable_early_stop = DATA_SOURCE == 'h5_three_channel'
@@ -2267,15 +2267,15 @@ def run_case(case: Dict[str, Any]):
             best_label = 'best_f1' if best_by_f1 else 'best_val'
             print(f'[{case['name']}] epoch {ep:02d}/{total_epochs} train={tr_loss:.4f} valid={va_loss:.4f} {best_label}={best:.4f} lr={cur_lr:.2e}' + (f' no_improve={no_improve_epochs}/{H5_EARLY_STOP_PATIENCE}' if enable_early_stop else ''), flush=True)
             if enable_early_stop and no_improve_epochs >= H5_EARLY_STOP_PATIENCE:
-                print(f'[{case['name']}] EarlyStopping(H5) 触发：连续 {H5_EARLY_STOP_PATIENCE} 个 epoch 未提升，提前结束训练。', flush=True)
+                print(f'[{case['name']}] EarlyStopping(H5) triggered: consecutive {H5_EARLY_STOP_PATIENCE} epochs showed no improvement and the training was prematurely terminated.', flush=True)
                 break
     if best_state_dict is not None and (not eval_only):
         model.load_state_dict(best_state_dict)
         criterion = 'best_f1' if best_by_f1 else 'best_val_loss'
-        print(f'[{case['name']}] 使用验证集最优模型进行评估（best_epoch={best_epoch}, {criterion}={best:.4f}）', flush=True)
+        print(f'[{case['name']}] Evaluate using the best model from the validation set (best_epoch = {best_epoch}, {criterion} = {best:.4f})', flush=True)
         best_path = os.path.join(case_dir, 'best_model.pt')
         torch.save(best_state_dict, best_path)
-        print(f'[{case['name']}] 最优模型已保存: {best_path}', flush=True)
+        print(f'[{case['name']}] The optimal model has been saved: {best_path}', flush=True)
     use_mc_dropout_selective = case.get('use_mc_dropout_selective', False)
     fixed_thr_p = float(case.get('fixed_thr_p', 0.5))
     fixed_thr_s = float(case.get('fixed_thr_s', 0.5))
@@ -2285,10 +2285,10 @@ def run_case(case: Dict[str, Any]):
         thr_s = fixed_thr_s
         f1_p = f1_s = float('nan')
     else:
-        print(f'[{case['name']}] 使用固定阈值 P={fixed_thr_p:.3f} S={fixed_thr_s:.3f}（基线模式）...', flush=True)
+        print(f'[{case['name']}] Using fixed threshold P = {fixed_thr_p:.3f} S = {fixed_thr_s:.3f} (Baseline mode)...', flush=True)
         thr_p = fixed_thr_p
         thr_s = fixed_thr_s
-        print(f'[{case['name']}] 检查预测概率分布...', flush=True)
+        print(f'[{case['name']}] Checking the predicted probability distribution...', flush=True)
         model.eval()
         all_p_probs, all_s_probs = ([], [])
         with torch.inference_mode():
@@ -2309,13 +2309,13 @@ def run_case(case: Dict[str, Any]):
                         s_max_prob = float(np.max(probs[b, 2]))
                         all_s_probs.append(s_max_prob)
         if all_p_probs:
-            print(f'[{case['name']}] P波预测概率统计: mean={np.mean(all_p_probs):.3f}, std={np.std(all_p_probs):.3f}, min={np.min(all_p_probs):.3f}, max={np.max(all_p_probs):.3f}, 超过0.5的比例={np.mean(np.array(all_p_probs) >= 0.5):.1%}', flush=True)
+            print(f'[{case['name']}] P-wave prediction probability statistics: mean={np.mean(all_p_probs):.3f}, std={np.std(all_p_probs):.3f}, min={np.min(all_p_probs):.3f}, max={np.max(all_p_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_p_probs) >= 0.5):.1%}', flush=True)
         if all_s_probs:
-            print(f'[{case['name']}] S波预测概率统计: mean={np.mean(all_s_probs):.3f}, std={np.std(all_s_probs):.3f}, min={np.min(all_s_probs):.3f}, max={np.max(all_s_probs):.3f}, 超过0.5的比例={np.mean(np.array(all_s_probs) >= 0.5):.1%}', flush=True)
+            print(f'[{case['name']}] S-wave prediction probability statistics: mean={np.mean(all_s_probs):.3f}, std={np.std(all_s_probs):.3f}, min={np.min(all_s_probs):.3f}, max={np.max(all_s_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_s_probs) >= 0.5):.1%}', flush=True)
         (p_conf, p_err, p_has), (s_conf, s_err, s_has) = collect_conf_err(model, valid_loader, device)
         _, f1_p = best_threshold(p_conf, p_err, p_has, DYN_TOL_SAMPLES, [thr_p], debug=False)
         _, f1_s = best_threshold(s_conf, s_err, s_has, DYN_TOL_SAMPLES, [thr_s], debug=False)
-        print(f'[{case['name']}] 固定阈值: P={thr_p:.3f} (F1={f1_p:.4f}), S={thr_s:.3f} (F1={f1_s:.4f})', flush=True)
+        print(f'[{case['name']}] fixed threshold: P={thr_p:.3f} (F1={f1_p:.4f}), S={thr_s:.3f} (F1={f1_s:.4f})', flush=True)
     metrics_unc = None
     metrics_score = None
     metrics_gate = None
@@ -2332,7 +2332,7 @@ def run_case(case: Dict[str, Any]):
             cand_thr_s = float(case.get('mc_candidate_thr_s', 0.3))
             metrics_unc = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=True, candidate_thr_p=cand_thr_p, candidate_thr_s=cand_thr_s)
             try:
-                print(f'[{case['name']}] 两级阈值+unc 候选 对照 (Full 指标):', flush=True)
+                print(f'[{case['name']}] Two-level threshold + unc candidate control (Full indicator):', flush=True)
                 print(f'  baseline : P-Prec={metrics['p_prec']:.4f}, P-Rec={metrics['p_rec']:.4f}, P-F1={metrics['p_f1']:.4f}; S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
                 print(f'  unc-cand : P-Prec={metrics_unc['p_prec']:.4f}, P-Rec={metrics_unc['p_rec']:.4f}, P-F1={metrics_unc['p_f1']:.4f}; S-Prec={metrics_unc['s_prec']:.4f}, S-Rec={metrics_unc['s_rec']:.4f}, S-F1={metrics_unc['s_f1']:.4f}', flush=True)
             except Exception:
@@ -2343,7 +2343,7 @@ def run_case(case: Dict[str, Any]):
             score_tau_unc_s = case.get('mc_score_tau_unc_s', None)
             metrics_score = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=False, candidate_thr_s=score_cand_thr_s, use_score_candidate_s=True, score_lambda_s=score_lambda_s, score_tau_unc_s=score_tau_unc_s)
             try:
-                print(f'[{case['name']}] S-score 候选 对照 (Full 指标): (lambda_s={score_lambda_s:.2f}, cand_thr_s={score_cand_thr_s:.2f}, tau_unc_s={score_tau_unc_s})', flush=True)
+                print(f'[{case['name']}] S-score candidate control (Full indicators):(lambda_s={score_lambda_s:.2f}, cand_thr_s={score_cand_thr_s:.2f}, tau_unc_s={score_tau_unc_s})', flush=True)
                 print(f'  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
                 print(f'  score-cand: S-Prec={metrics_score['s_prec']:.4f}, S-Rec={metrics_score['s_rec']:.4f}, S-F1={metrics_score['s_f1']:.4f}', flush=True)
             except Exception:
@@ -2354,7 +2354,7 @@ def run_case(case: Dict[str, Any]):
             gate_base_s = case.get('mc_unc_gating_base_s', None)
             metrics_gate = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=False, use_score_candidate_s=False, use_unc_gating_s=True, unc_gating_tau_s=gate_tau_s, unc_gating_k_s=gate_k_s, unc_gating_base_s=gate_base_s)
             try:
-                print(f'[{case['name']}] S-unc gating 对照 (Full 指标): (tau_unc_s={gate_tau_s}, k_s={gate_k_s}, base_s={gate_base_s})', flush=True)
+                print(f'[{case['name']}] S-unc gating control (Full indicators):(tau_unc_s={gate_tau_s}, k_s={gate_k_s}, base_s={gate_base_s})', flush=True)
                 print(f'  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
                 print(f'  unc-gate : S-Prec={metrics_gate['s_prec']:.4f}, S-Rec={metrics_gate['s_rec']:.4f}, S-F1={metrics_gate['s_f1']:.4f}', flush=True)
             except Exception:
@@ -2372,7 +2372,7 @@ def run_case(case: Dict[str, Any]):
     test_loader_for_vis = None
     if RUN_TEST_EVAL and test_ds is not None:
         try:
-            print(f'[{case['name']}] 在独立测试集上评估（不再调参，仅前向计算指标）...', flush=True)
+            print(f'[{case['name']}] Evaluation on the independent test set (no further parameter tuning, only forward calculation of metrics)...', flush=True)
             g_test = torch_generator(SEED + 2)
             test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_test)
             test_metrics = eval_detailed(model, test_loader, device, thr_p=thr_p, thr_s=thr_s, uncertainty_threshold_options=case, current_epoch=total_epochs, tol=DYN_TOL_SAMPLES)
@@ -2380,10 +2380,10 @@ def run_case(case: Dict[str, Any]):
             def _fmt_res_t(key: str) -> str:
                 v = test_metrics.get(key)
                 return f'{float(v):.4f}' if v is not None else 'N/A'
-            print(f'[{case['name']}] TEST 结果: time_acc={test_metrics.get('time_acc', float('nan')):.4f}, P-Prec={test_metrics.get('p_prec', float('nan')):.4f}, P-Rec={test_metrics.get('p_rec', float('nan')):.4f}, P-F1={test_metrics.get('p_f1', float('nan')):.4f}, S-Prec={test_metrics.get('s_prec', float('nan')):.4f}, S-Rec={test_metrics.get('s_rec', float('nan')):.4f}, S-F1={test_metrics.get('s_f1', float('nan')):.4f} | p_res(mean/std/mae)s=({_fmt_res_t('p_res_mean_sec')}/{_fmt_res_t('p_res_std_sec')}/{_fmt_res_t('p_res_mae_sec')}), s_res=({_fmt_res_t('s_res_mean_sec')}/{_fmt_res_t('s_res_std_sec')}/{_fmt_res_t('s_res_mae_sec')})', flush=True)
+            print(f'[{case['name']}] TEST result: time_acc={test_metrics.get('time_acc', float('nan')):.4f}, P-Prec={test_metrics.get('p_prec', float('nan')):.4f}, P-Rec={test_metrics.get('p_rec', float('nan')):.4f}, P-F1={test_metrics.get('p_f1', float('nan')):.4f}, S-Prec={test_metrics.get('s_prec', float('nan')):.4f}, S-Rec={test_metrics.get('s_rec', float('nan')):.4f}, S-F1={test_metrics.get('s_f1', float('nan')):.4f} | p_res(mean/std/mae)s=({_fmt_res_t('p_res_mean_sec')}/{_fmt_res_t('p_res_std_sec')}/{_fmt_res_t('p_res_mae_sec')}), s_res=({_fmt_res_t('s_res_mean_sec')}/{_fmt_res_t('s_res_std_sec')}/{_fmt_res_t('s_res_mae_sec')})', flush=True)
             test_loader_for_vis = test_loader
         except Exception as e:
-            print(f'[{case['name']}] 在测试集上评估失败（{e}），仅保留验证集指标。', flush=True)
+            print(f'[{case['name']}] The evaluation failed on the test set ({e}), and only the validation set metrics are retained.', flush=True)
     case_dir = os.path.join(OUT_ROOT, run_name)
     os.makedirs(case_dir, exist_ok=True)
     if use_mc_dropout_selective and isinstance(metrics_mc, dict) and (metrics_mc.get('risk_coverage') is not None):
@@ -2409,9 +2409,9 @@ def run_case(case: Dict[str, Any]):
             try:
                 overview_path = os.path.join(case_dir, 'uncertainty_overview_grid.png')
                 plot_uncertainty_overview_grid(metrics_mc['risk_coverage'], ue_export, overview_path, num_bins=10)
-                print(f'[{case['name']}] 已生成: {overview_path}', flush=True)
+                print(f'[{case['name']}] generated: {overview_path}', flush=True)
             except Exception as e:
-                print(f'[{case['name']}] 生成 uncertainty_overview_grid.png 失败: {e}', flush=True)
+                print(f'[{case['name']}] Failed to generate the file "uncertainty_overview_grid.png". {e}', flush=True)
         n_samples = len(metrics_mc['mc_uncertainty'])
         unc_arr = np.array(metrics_mc['mc_uncertainty'], dtype=np.float64)
         etp: list[str] = metrics_mc['mc_error_type_p']
@@ -2573,7 +2573,7 @@ def run_case(case: Dict[str, Any]):
                 np.savez(os.path.join(case_dir, 'pca_ours.npz'), features=features, labels=labels, allow_pickle=True)
                 plot_pca_visualization(features, labels, os.path.join(case_dir, 'pca_visualization.png'), label_names=['BG window', 'P window', 'S window'])
         except Exception as e:
-            print(f'[{case['name']}] PCA 可视化跳过（{e}）', flush=True)
+            print(f'[{case['name']}] PCA visualization skipped（{e}）', flush=True)
     if plt is not None and case.get('generate_visualizations', True):
         try:
             pr_snr = collect_pr_snr_data(model, valid_loader, device, tol_samples=DYN_TOL_SAMPLES)
@@ -2587,12 +2587,12 @@ def run_case(case: Dict[str, Any]):
                 plot_snr_stratified(pr_snr, os.path.join(case_dir, 'snr_stratified.png'), fixed_thr=0.5)
                 plot_max_prob_histogram(pr_snr, os.path.join(case_dir, 'max_prob_histogram.png'), bins=15)
         except Exception as e:
-            print(f'[{case['name']}] PR/SNR 图跳过（{e}）', flush=True)
+            print(f'[{case['name']}] PR/SNR graph skipped（{e}）', flush=True)
     generate_visualizations = case.get('generate_visualizations', True)
     if plt is not None:
         plot_losses(tr_hist, va_hist, os.path.join(case_dir, 'loss_curve.png'))
     if plt is not None and generate_visualizations:
-        print(f'[{case['name']}] 生成样本可视化...', flush=True)
+        print(f'[{case['name']}] generate sample visualization... ', flush=True)
         save_visuals(model, valid_ds, device, os.path.join(case_dir, 'figs'), n=N_VIS)
         try:
             rep_out = os.path.join(case_dir, 'representative_waveforms_2x2.png')
@@ -2606,11 +2606,11 @@ def run_case(case: Dict[str, Any]):
             save_representative_waveforms_2x2(model, valid_loader, device, out_path=rep_out, tol=DYN_TOL_SAMPLES, thr_p=float(case.get('fixed_thr_p', 0.5)), thr_s=float(case.get('fixed_thr_s', 0.5)), max_scan_samples=int(case.get('rep_waveform_max_scan', 2000)), extra_loaders=extra_rep_loaders, rep_npz_path=rep_npz)
         except Exception:
             pass
-        print(f'[{case['name']}] 可视化图表生成完成（loss_curve.png + figs/vis_*.png）', flush=True)
+        print(f'[ {case['name']} ] Visualization chart generation completed (loss_curve.png + figs/vis_*.png)', flush=True)
     elif plt is None:
-        print(f'[{case['name']}] 跳过可视化图表生成（matplotlib 不可用）', flush=True)
+        print(f'[{case['name']}] Skip generation of visualization charts (matplotlib is not available)', flush=True)
     elif not generate_visualizations:
-        print(f'[{case['name']}] 已输出 loss_curve.png，跳过样本可视化（generate_visualizations=False）', flush=True)
+        print(f'[{case['name']}] loss_curve.png has been output. Skipping sample visualization (generate_visualizations=False)', flush=True)
     extra_unc_fields: Dict[str, Any] = {}
     if metrics_unc is not None:
         try:
@@ -2643,7 +2643,7 @@ def run_case(case: Dict[str, Any]):
     if DATA_SOURCE == 'ceed' and (not row_name.endswith('_ceed')):
         row_name = f'{row_name}_ceed'
     row = dict(name=row_name, best_val=best, train_last=tr_hist[-1], valid_last=va_hist[-1], use_cbam=case['use_cbam'], kernels=list(case['kernels']), thr_p=thr_p, thr_s=thr_s, f1_p=float(metrics_full['p_f1']), f1_s=float(metrics_full['s_f1']), **metrics, **extra_unc_fields, **extra_score_fields, **extra_gate_fields)
-    print(f'[{case['name']}] 训练和评估完成，最终结果: P-F1={metrics_full['p_f1']:.4f}, S-F1={metrics_full['s_f1']:.4f}', flush=True)
+    print(f'[{case['name']}] Training and evaluation completed. Final result: P-F1={metrics_full['p_f1']:.4f}, S-F1={metrics_full['s_f1']:.4f}', flush=True)
     return row
 
 def log_split_info(case_name: str, train_size: int, valid_size: int, seed_value: int=SEED):

@@ -12,7 +12,7 @@ class CEEDDataset(Dataset):
 
     def __init__(self, dataset_name: str='CEED.py', split: str='train', limit: int | None=10000, waveform_key: str | None='data', p_key: str | None=None, s_key: str | None=None, sampling_rate: float=100.0, crop_len: int=3000, label_sigma_sec: float | None=0.1, label_width: int=51, training: bool=True, local_dir: str | None=None, use_waveform_augmentation: bool=False, aug_noise_snr_db_min: float=3.0, aug_noise_snr_db_max: float=20.0, aug_amplitude_min: float=0.5, aug_amplitude_max: float=2.0):
         if load_dataset is None:
-            raise ImportError('未安装 datasets，请先 pip install datasets')
+            raise ImportError('datasets is not installed, please pip install datasets')
         self.crop_len = int(crop_len)
         self.training = bool(training)
         self.sampling_rate = float(sampling_rate)
@@ -24,11 +24,11 @@ class CEEDDataset(Dataset):
             from glob import glob
             h5_files = sorted(glob(os.path.join(local_dir, '*.h5')))
             if h5_files:
-                print(f'使用本地数据集: {local_dir}')
-                print(f'找到 {len(h5_files)} 个 H5 文件: {[os.path.basename(f) for f in h5_files[:3]]}{('...' if len(h5_files) > 3 else '')}')
+                print(f'Using local dataset: {local_dir}')
+                print(f'Found {len(h5_files)} H5 files: {[os.path.basename(f) for f in h5_files[:3]]}{('...' if len(h5_files) > 3 else '')}')
             else:
-                print(f'警告: 本地目录 {local_dir} 中未找到 .h5 文件')
-                print(f'将尝试从网络下载（如果网络可用）')
+                print(f'Warning: No .h5 files found in local directory {local_dir}')
+                print(f'Will attempt to download from network (if available)')
         ds = None
         errors = []
         base_kwargs = {'name': 'event', 'trust_remote_code': True}
@@ -37,8 +37,8 @@ class CEEDDataset(Dataset):
             base_kwargs['download_mode'] = 'reuse_cache_if_exists'
         try:
             if local_dir:
-                print(f'正在从本地路径加载数据集: {local_dir}')
-                print("（注意：'Downloading and preparing' 是 datasets 库的默认消息，实际使用的是本地数据）")
+                print(f'Loading dataset from local path: {local_dir}')
+                print("(Note: 'Downloading and preparing' is the default message from datasets library, using local data)")
             import os
             old_env = os.environ.get('HF_DATASETS_VERBOSITY', None)
             if local_dir:
@@ -50,7 +50,7 @@ class CEEDDataset(Dataset):
                         _ = len(ds)
                     except (NotImplementedError, OSError) as access_err:
                         if 'LocalFileSystem' in str(access_err):
-                            print('警告: 数据集已加载但访问时遇到 LocalFileSystem 错误，尝试重新生成...')
+                            print('Warning: Dataset loaded but encountered LocalFileSystem error on access, retrying...')
                             raise access_err
             except OSError as os_err:
                 if 'Cannot find data file' in str(os_err) or '.arrow' in str(os_err):
@@ -59,64 +59,64 @@ class CEEDDataset(Dataset):
                         import shutil
                         cache_dir = os.path.expanduser('~/.cache/huggingface/datasets/ceed/')
                         print('=' * 60)
-                        print('检测到缓存文件缺失或不完整')
+                        print('Detected missing or incomplete cache files')
                         print('=' * 60)
-                        print(f'缓存目录: {cache_dir}')
+                        print(f'Cache directory: {cache_dir}')
                         if os.path.exists(cache_dir):
                             try:
                                 cache_size = sum((os.path.getsize(os.path.join(dirpath, filename)) for dirpath, dirnames, filenames in os.walk(cache_dir) for filename in filenames)) / 1024 ** 3
-                                print(f'缓存目录大小: {cache_size:.2f} GB')
+                                print(f'Cache directory size: {cache_size:.2f} GB')
                                 arrow_files = []
                                 for root, dirs, files in os.walk(cache_dir):
                                     for f in files:
                                         if f.endswith('.arrow'):
                                             arrow_files.append(os.path.join(root, f))
                                 if arrow_files:
-                                    print(f'找到 {len(arrow_files)} 个 .arrow 文件（可能不完整）')
-                                    print(f'示例: {(arrow_files[0] if arrow_files else 'N/A')}')
+                                    print(f'Found {len(arrow_files)} .arrow files (may be incomplete)')
+                                    print(f'Example: {(arrow_files[0] if arrow_files else 'N/A')}')
                                 else:
-                                    print('未找到 .arrow 文件')
+                                    print('No .arrow files found')
                             except Exception as diag_err:
-                                print(f'无法诊断缓存目录: {diag_err}')
+                                print(f'Unable to diagnose cache directory: {diag_err}')
                         else:
-                            print('缓存目录不存在')
-                        print('\n可能的原因：')
-                        print('  1. 生成过程中被中断（内存不足、磁盘空间不足、进程被kill等）')
-                        print('  2. 多进程同时访问导致缓存文件损坏')
-                        print('  3. 磁盘空间不足导致写入失败')
-                        print('  4. 权限问题导致写入失败')
-                        print('\n解决方案：')
-                        print('  正在尝试强制重新生成缓存...')
+                            print('Cache directory does not exist')
+                        print('\nPossible causes:')
+                        print('  1. Generation process was interrupted (insufficient memory, disk space, process killed, etc.)')
+                        print('  2. Concurrent access from multiple processes corrupted cache files')
+                        print('  3. Insufficient disk space caused write failure')
+                        print('  4. Permission issues caused write failure')
+                        print('\nSolution:')
+                        print('  Attempting to force regenerate cache...')
                         print('=' * 60)
                         base_kwargs_retry = base_kwargs.copy()
                         base_kwargs_retry['download_mode'] = 'force_redownload'
                         try:
                             ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_retry)
-                            print('✓ 缓存重新生成成功！')
+                            print('✓ Cache regeneration successful!')
                         except Exception as retry_err:
                             retry_err_str = str(retry_err)
                             if 'Cannot find data file' in retry_err_str or '.arrow' in retry_err_str or 'NNNNN' in retry_err_str:
-                                print('\n检测到缓存文件不完整（文件名包含 NNNNN 或文件缺失）')
-                                print('正在清理损坏的缓存并重新生成...')
+                                print('\nDetected incomplete cache files (filename contains NNNNN or file missing)')
+                                print('Cleaning damaged cache and regenerating...')
                                 try:
                                     import shutil
                                     if os.path.exists(cache_dir):
                                         shutil.rmtree(cache_dir)
-                                        print(f'✓ 已清理损坏的缓存: {cache_dir}')
+                                        print(f'✓ Cleaned damaged cache: {cache_dir}')
                                     base_kwargs_final = base_kwargs.copy()
                                     base_kwargs_final['download_mode'] = 'force_redownload'
                                     ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_final)
-                                    print('✓ 缓存重新生成成功！')
+                                    print('✓ Cache regeneration successful!')
                                 except Exception as final_err:
-                                    print('\n清理缓存后仍然失败，请检查：')
-                                    print('  1. 磁盘空间是否充足（至少需要 10 GB）')
-                                    print('  2. 是否有写入权限')
-                                    print('  3. 磁盘是否已满')
-                                    raise RuntimeError(f'无法加载数据集。即使清理缓存后仍然失败。\n请检查系统资源（磁盘空间、权限等）。\n缓存目录: {cache_dir}\n原始错误: {os_err}\n重试错误: {retry_err}\n最终错误: {final_err}') from final_err
+                                    print('\nStill fails after cleaning cache, please check:')
+                                    print('  1. Is disk space sufficient (at least 10 GB needed)')
+                                    print('  2. Do you have write permission')
+                                    print('  3. Is the disk full')
+                                    raise RuntimeError(f'Unable to load dataset. Still fails even after cleaning cache.\\nPlease check system resources (disk space, permissions, etc.).\\nCache directory: {cache_dir}\\nOriginal error: {os_err}\\nRetry error: {retry_err}\\nFinal error: {final_err}') from final_err
                             else:
-                                print('\n强制重新生成失败（非缓存文件问题）')
-                                print(f'错误: {retry_err}')
-                                raise RuntimeError(f'无法加载数据集。\n原始错误: {os_err}\n重试错误: {retry_err}') from retry_err
+                                print('\nForce regeneration failed (cache file issue)')
+                                print(f'Error: {retry_err}')
+                                raise RuntimeError(f'Unable to load dataset.\\nOriginal error: {os_err}\\nRetry error: {retry_err}') from retry_err
                     else:
                         raise
                 else:
@@ -127,7 +127,7 @@ class CEEDDataset(Dataset):
                 else:
                     os.environ['HF_DATASETS_VERBOSITY'] = old_env
             if local_dir:
-                print(f'✓ 成功加载本地数据集，共 {len(ds)} 个样本')
+                print(f'✓ Successfully loaded local dataset with {len(ds)} samples')
         except NotImplementedError as e:
             import os
             old_env = os.environ.get('HF_DATASETS_VERBOSITY', None)
@@ -142,94 +142,94 @@ class CEEDDataset(Dataset):
                     arrow_pattern = os.path.join(cache_dir, '**', '*.arrow')
                     existing_arrows = glob.glob(arrow_pattern, recursive=True)
                     if existing_arrows:
-                        print(f'检测到 LocalFileSystem 错误，但发现 {len(existing_arrows)} 个已存在的缓存文件')
-                        print('尝试直接加载数据集（不重新生成）...')
+                        print(f'Detected LocalFileSystem error, but found {len(existing_arrows)} existing cache files')
+                        print('Attempting to load dataset directly (without regeneration)...')
                         try:
                             base_kwargs_direct = {k: v for k, v in base_kwargs.items() if k != 'download_mode'}
                             if not is_new_version and 'trust_remote_code' not in base_kwargs_direct:
                                 base_kwargs_direct['trust_remote_code'] = True
                             ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_direct)
-                            print('✓ 使用现有缓存成功！')
+                            print('✓ Successfully loaded using existing cache!')
                         except Exception as direct_err:
-                            print(f'直接加载失败: {direct_err}')
-                            print('缓存可能不完整或已损坏，需要重新生成...')
+                            print(f'Direct load failed: {direct_err}')
+                            print('Cache may be incomplete or corrupted, needs regeneration...')
                             try:
                                 base_kwargs_retry = base_kwargs.copy()
                                 base_kwargs_retry['download_mode'] = 'force_redownload'
                                 ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_retry)
-                                print('✓ 重新生成缓存成功！')
+                                print('✓ Cache re-generation successful！')
                             except Exception as e2:
-                                raise RuntimeError(f'无法加载本地数据集，缓存可能已损坏。\n请手动清理缓存（不需要 root 权限）：\n  rm -rf {cache_dir}\n然后重新运行。\n本地数据路径: {local_dir}\n原始错误: {e}\n直接加载错误: {direct_err}\n重新生成错误: {e2}') from e2
+                                raise RuntimeError(f'Unable to load local dataset, cache may be corrupted.\\nPlease manually clean cache (no root permission needed):\\n  rm -rf {cache_dir}\\nThen run again.\\nLocal data path: {local_dir}\\nOriginal error: {e}\\nDirect load error: {direct_err}\\nRegeneration error: {e2}') from e2
                     else:
-                        print(f'检测到 LocalFileSystem 缓存错误，尝试强制重新生成缓存...')
-                        print(f'（如果失败，可能需要手动清理缓存: rm -rf {cache_dir}）')
+                        print(f'Detected LocalFileSystem cache error, attempting to force regenerate cache...')
+                        print(f'(If it fails, you may need to manually clean cache: rm -rf {cache_dir})')
                         try:
                             base_kwargs_retry = base_kwargs.copy()
                             base_kwargs_retry['download_mode'] = 'force_redownload'
                             ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_retry)
-                            print('使用本地数据成功！')
+                            print('Successfully loaded local data!')
                         except Exception as e2:
-                            raise RuntimeError(f'无法加载本地数据集，缓存可能已损坏。\n请手动清理缓存（不需要 root 权限）：\n  rm -rf {cache_dir}\n然后重新运行。\n本地数据路径: {local_dir}\n原始错误: {e}\n重试错误: {e2}') from e2
+                            raise RuntimeError(f'Failed to load the local dataset. The cache might be corrupted.\nPlease manually clear the cache (no root privileges required):\n  rm -rf {cache_dir}\nThen run again.\nLocal data path: {local_dir}\nOriginal error: {e}\nRetry error: {e2}') from e2
                 else:
                     if os.path.exists(cache_dir):
-                        print(f'检测到缓存错误，自动清理缓存目录: {cache_dir}')
+                        print(f'Detected cache error, automatically cleaning cache directory: {cache_dir}')
                         try:
                             shutil.rmtree(cache_dir)
-                            print('缓存已清理，重新下载数据集...')
+                            print('Cache cleaned, redownloading dataset...')
                         except Exception as cleanup_error:
-                            print(f'警告: 无法自动清理缓存: {cleanup_error}')
-                            print(f'请手动执行: rm -rf {cache_dir}')
+                            print(f'Warning: Unable to automatically clean cache: {cleanup_error}')
+                            print(f'Please manually execute: rm -rf {cache_dir}')
                     try:
                         ds = load_dataset(dataset_name_to_use, split=split, download_mode='force_redownload', **base_kwargs)
-                        print('数据集重新下载成功！')
+                        print('Dataset redownloaded successfully!')
                     except Exception as e2:
-                        raise RuntimeError(f'清理缓存后仍无法加载数据集。\n原始错误: {e}\n重新下载错误: {e2}\n请检查网络连接或手动清理缓存：\n  rm -rf ~/.cache/huggingface/datasets/ceed/') from e2
+                        raise RuntimeError(f'Still unable to load dataset after cleaning cache.\\nOriginal error: {e}\\nRedownload error: {e2}\\nPlease check network connection or manually clean cache:\\n  rm -rf ~/.cache/huggingface/datasets/ceed/') from e2
             else:
-                raise RuntimeError(f'数据集加载错误: {e}\n请尝试清理缓存：rm -rf ~/.cache/huggingface/datasets/ceed/') from e
+                raise RuntimeError(f'Dataset loading error: {e}\\nPlease try cleaning cache: rm -rf ~/.cache/huggingface/datasets/ceed/') from e
         except (TypeError, ValueError) as e:
-            errors.append(f'方式1失败: {type(e).__name__}: {e}')
+            errors.append(f'Method 1 failed: {type(e).__name__}: {e}')
             try:
                 base_kwargs_with_trust = base_kwargs.copy()
                 if not is_new_version:
                     base_kwargs_with_trust['trust_remote_code'] = True
                 ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_with_trust)
             except (TypeError, ValueError) as e2:
-                errors.append(f'方式2失败: {type(e2).__name__}: {e2}')
+                errors.append(f'Method 2 failed: {type(e2).__name__}: {e2}')
                 try:
-                    print('尝试强制重新下载数据集...')
+                    print('Attempting to force redownload dataset...')
                     base_kwargs_force = base_kwargs.copy()
                     base_kwargs_force['download_mode'] = 'force_redownload'
                     if not is_new_version:
                         base_kwargs_force['trust_remote_code'] = True
                     ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_force)
                 except Exception as e3:
-                    errors.append(f'方式3失败: {type(e3).__name__}: {e3}')
-                    raise RuntimeError(f'无法加载数据集，所有尝试都失败。\n错误详情:\n' + '\n'.join((f'  - {err}' for err in errors)) + f"\n建议解决方案:\n  1. 清理缓存: rm -rf ~/.cache/huggingface/datasets/ceed/\n  2. 检查本地数据路径: CEED_LOCAL_DIR = '{local_dir or 'None'}'\n  3. 如果使用本地数据，确保路径正确且包含 .h5 文件") from e3
+                    errors.append(f'Method 3 failed: {type(e3).__name__}: {e3}')
+                    raise RuntimeError(f'Unable to load dataset, all attempts failed.\\nError details:\\n' + '\\n'.join((f'  - {err}' for err in errors)) + f"\\nSuggested solutions:\\n  1. Clean cache: rm -rf ~/.cache/huggingface/datasets/ceed/\\n  2. Check local data path: CEED_LOCAL_DIR = '{local_dir or 'None'}'\\n  3. If using local data, ensure the path is correct and contains .h5 files") from e3
             except NotImplementedError as e2:
                 if 'LocalFileSystem' in str(e2):
                     import os
                     import shutil
                     cache_dir = os.path.expanduser('~/.cache/huggingface/datasets/ceed/')
                     if os.path.exists(cache_dir):
-                        print(f'检测到缓存错误，自动清理缓存目录: {cache_dir}')
+                        print(f'Detected cache error, automatically cleaning cache directory: {cache_dir}')
                         try:
                             shutil.rmtree(cache_dir)
-                            print('缓存已清理，重新下载数据集...')
+                            print('Cache cleaned, redownloading dataset...')
                         except Exception as cleanup_error:
-                            print(f'警告: 无法自动清理缓存: {cleanup_error}')
+                            print(f'Warning: Unable to automatically clean cache: {cleanup_error}')
                     try:
                         base_kwargs_retry = base_kwargs.copy()
                         base_kwargs_retry['download_mode'] = 'force_redownload'
                         if not is_new_version:
                             base_kwargs_retry['trust_remote_code'] = True
                         ds = load_dataset(dataset_name_to_use, split=split, **base_kwargs_retry)
-                        print('数据集重新下载成功！')
+                        print('Dataset redownloaded successfully!')
                     except Exception as e3:
-                        raise RuntimeError(f'清理缓存后仍无法加载数据集。\n请手动清理缓存：rm -rf ~/.cache/huggingface/datasets/ceed/\n原始错误: {e2}') from e3
+                        raise RuntimeError(f'Still unable to load dataset after cleaning cache.\\nPlease manually clean cache: rm -rf ~/.cache/huggingface/datasets/ceed/\\nOriginal error: {e2}') from e3
                 else:
-                    raise RuntimeError(f'数据集加载错误: {e2}') from e2
+                    raise RuntimeError(f'Dataset loading error: {e2}') from e2
         if ds is None:
-            raise RuntimeError(f'无法加载数据集。\n错误详情:\n' + '\n'.join((f'  - {err}' for err in errors)))
+            raise RuntimeError(f'Unable to load dataset.\\nError details:\\n' + '\\n'.join((f'  - {err}' for err in errors)))
         if limit is not None and len(ds) > limit:
             ds = ds.select(range(limit))
         self.ds = ds
@@ -263,7 +263,7 @@ class CEEDDataset(Dataset):
                     arr = a
                     break
             if arr is None:
-                raise ValueError('未找到合适的波形字段，请手动指定 waveform_key')
+                raise ValueError('No suitable waveform field found, please manually specify waveform_key')
         return self._to_tc_strict(arr)
 
     @staticmethod
@@ -305,7 +305,7 @@ class CEEDDataset(Dataset):
             else:
                 a = a.T
         else:
-            raise ValueError(f'不支持的波形维度：{a.shape}')
+            raise ValueError(f'Unsupported waveform dimension: {a.shape}')
         return a.astype(np.float32)
 
     def _to_text(self, x) -> str:
@@ -416,7 +416,7 @@ class CEEDDataset(Dataset):
             if 'maps_as_pydicts' in str(e) or 'unexpected keyword argument' in str(e):
                 if not hasattr(self, '_pyarrow_warning_shown'):
                     import warnings
-                    warnings.warn(f"检测到 pyarrow 版本不兼容错误: {e}\n建议安装兼容的 pyarrow 版本：\n  pip install 'pyarrow>=8.0.0,<15.0.0'\n或者升级 datasets 库：\n  pip install --upgrade datasets pyarrow", UserWarning)
+                    warnings.warn(f"Detected pyarrow version incompatibility error: {e}\\nRecommend installing a compatible pyarrow version:\\n  pip install 'pyarrow>=8.0.0,<15.0.0'\\nOr upgrade the datasets library:\\n  pip install --upgrade datasets pyarrow", UserWarning)
                     self._pyarrow_warning_shown = True
                 try:
                     if not hasattr(self, '_ds_pandas'):
@@ -429,7 +429,7 @@ class CEEDDataset(Dataset):
                         rec = self._ds_dict[int(i)]
                     except Exception as e3:
                         if not hasattr(self, '_ds_list'):
-                            print('警告: 尝试将数据集转换为列表格式（这可能需要一些时间并占用大量内存）...')
+                            print('Warning: Attempting to convert dataset to list format (this may take some time and use a lot of memory)...')
                             self._ds_list = list(self.ds)
                         rec = self._ds_list[int(i)]
             else:
