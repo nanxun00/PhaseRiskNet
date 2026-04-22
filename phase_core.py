@@ -676,10 +676,10 @@ def eval_detailed(model, loader, device, thr_p: float=None, thr_s: float=None, u
         _print_len_stats(candidate_lengths['s'], 'S')
         samples_total = len(candidate_lengths['p'])
         sample_denom = samples_total if samples_total else 1
-        print(f'[eval_detailed] zero candidate rate: P={zero_candidate_counts['p'] / sample_denom:.1%}, S={zero_candidate_counts['s'] / sample_denom:.1%}', flush=True)
+        print(f"[eval_detailed] zero candidate rate: P={zero_candidate_counts['p'] / sample_denom:.1%}, S={zero_candidate_counts['s'] / sample_denom:.1%}", flush=True)
         pass_total = samples_processed if samples_processed else 1
-        print(f'[eval_detailed] threshold pass counts (per sample tracked): P={threshold_pass_counts['p']}/{pass_total}, S={threshold_pass_counts['s']}/{pass_total}', flush=True)
-        print(f'[eval_detailed] structural pruning: cap_p={structural_stats['cap_p']}, cap_s={structural_stats['cap_s']}, order={structural_stats['order']}', flush=True)
+        print(f"[eval_detailed] threshold pass counts (per sample tracked): P={threshold_pass_counts['p']}/{pass_total}, S={threshold_pass_counts['s']}/{pass_total}", flush=True)
+        print(f"[eval_detailed] structural pruning: cap_p={structural_stats['cap_p']}, cap_s={structural_stats['cap_s']}, order={structural_stats['order']}", flush=True)
         for phase in ('p', 's'):
             stats = uncertainty_stats[phase]
             if stats['tp'] or stats['fp'] or stats['fn']:
@@ -1250,8 +1250,8 @@ def eval_detailed_mc_selective(model: nn.Module, loader, device: torch.device, t
     rand_s_f1, rand_s_prec, rand_s_rec = _selective_phase_rand('S')
     if not quiet:
         print(f'[eval_detailed_mc_selective] MC T={mc_T}, drop_ratio={drop_ratio:.2%}', flush=True)
-        print(f'[eval_detailed_mc_selective] Full      : P-Prec={full_metrics['p_prec']:.4f}, P-Rec={full_metrics['p_rec']:.4f}, P-F1={full_metrics['p_f1']:.4f}; S-Prec={full_metrics['s_prec']:.4f}, S-Rec={full_metrics['s_rec']:.4f}, S-F1={full_metrics['s_f1']:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})', flush=True)
-        print(f'[eval_detailed_mc_selective] Selective: (drop top {drop_ratio:.0%} by uncertainty) P-Prec={selective_metrics['p_prec']:.4f}, P-Rec={selective_metrics['p_rec']:.4f}, P-F1={selective_metrics['p_f1']:.4f}; S-Prec={selective_metrics['s_prec']:.4f}, S-Rec={selective_metrics['s_rec']:.4f}, S-F1={selective_metrics['s_f1']:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})', flush=True)
+        print(f"[eval_detailed_mc_selective] Full      : P-Prec={full_metrics['p_prec']:.4f}, P-Rec={full_metrics['p_rec']:.4f}, P-F1={full_metrics['p_f1']:.4f}; S-Prec={full_metrics['s_prec']:.4f}, S-Rec={full_metrics['s_rec']:.4f}, S-F1={full_metrics['s_f1']:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})", flush=True)
+        print(f"[eval_detailed_mc_selective] Selective: (drop top {drop_ratio:.0%} by uncertainty) P-Prec={selective_metrics['p_prec']:.4f}, P-Rec={selective_metrics['p_rec']:.4f}, P-F1={selective_metrics['p_f1']:.4f}; S-Prec={selective_metrics['s_prec']:.4f}, S-Rec={selective_metrics['s_rec']:.4f}, S-F1={selective_metrics['s_f1']:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})", flush=True)
         print(f'[eval_detailed_mc_selective] 1-peak  : (single-fwd peak conf) P-Prec={conf_p_prec:.4f}, P-Rec={conf_p_rec:.4f}, P-F1={conf_p_f1:.4f}; S-Prec={conf_s_prec:.4f}, S-Rec={conf_s_rec:.4f}, S-F1={conf_s_f1:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})', flush=True)
         print(f'[eval_detailed_mc_selective] Random  : P-Prec={rand_p_prec:.4f}, P-Rec={rand_p_rec:.4f}, P-F1={rand_p_f1:.4f}; S-Prec={rand_s_prec:.4f}, S-Rec={rand_s_rec:.4f}, S-F1={rand_s_f1:.4f} | p_res(mean/std/mae)s=({_fmt_res(p_res_mean_sec)}/{_fmt_res(p_res_std_sec)}/{_fmt_res(p_res_mae_sec)}), s_res=({_fmt_res(s_res_mean_sec)}/{_fmt_res(s_res_std_sec)}/{_fmt_res(s_res_mae_sec)})', flush=True)
     time_acc = time_correct / max(1, n_time)
@@ -2127,36 +2127,36 @@ def run_case(case: Dict[str, Any]):
     case_seed = case.get('seed', SEED)
     seed_everything(case_seed, deterministic=True)
     eval_only = bool(case.get('eval_only', False))
-    print(f'[{case['name']}] Initializing device...', flush=True)
-    print(f'[{case['name']}] Using random seed: {case_seed}', flush=True)
+    print(f"[{case['name']}] Initializing device...", flush=True)
+    print(f"[{case['name']}] Using random seed: {case_seed}", flush=True)
     cuda_ok = torch.cuda.is_available()
     if cuda_ok:
         device = torch.device('cuda')
         try:
-            print(f'[{case['name']}] Using device: {device} ({torch.cuda.get_device_name(0)})', flush=True)
+            print(f"[{case['name']}] Using device: {device} ({torch.cuda.get_device_name(0)})", flush=True)
         except Exception:
-            print(f'[{case['name']}] Using device: {device}', flush=True)
+            print(f"[{case['name']}] Using device: {device}", flush=True)
     else:
         device = torch.device('cpu')
-        print(f'[{case['name']}] Using device: {device} (No available CUDA detected. If GPU is needed, check if PyTorch is GPU version and drivers are installed)', flush=True)
-    print(f'[{case['name']}] Loading dataset...', flush=True)
+        print(f"[{case['name']}] Using device: {device} (No available CUDA detected. If GPU is needed, check if PyTorch is GPU version and drivers are installed)", flush=True)
+    print(f"[{case['name']}] Loading dataset...", flush=True)
     train_ds, valid_ds, test_ds = build_datasets(case)
-    print(f'[{case['name']}] Dataset loading completed: train={len(train_ds)}, validation={len(valid_ds)}' + (f', test={len(test_ds)}' if test_ds is not None else ''), flush=True)
+    print(f"[{case['name']}] Dataset loading completed: train={len(train_ds)}, validation={len(valid_ds)}" + (f", test={len(test_ds)}" if test_ds is not None else ""), flush=True)
     g_train = torch_generator(case_seed)
     g_valid = torch_generator(case_seed + 1)
     batch_size = case.get('batch_size', BATCH_SIZE)
     if batch_size != BATCH_SIZE:
-        print(f'[{case['name']}] Using batch_size={batch_size} (default {BATCH_SIZE})', flush=True)
+        print(f"[{case['name']}] Using batch_size={batch_size} (default {BATCH_SIZE})", flush=True)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_train)
     valid_loader = DataLoader(valid_ds, batch_size=batch_size, shuffle=False, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_valid)
-    run_name = f'{case['name']}_seed{case_seed}'
+    run_name = f"{case['name']}_seed{case_seed}"
     log_split_info(run_name, len(train_ds), len(valid_ds), seed_value=case_seed)
     case_dir = os.path.join(OUT_ROOT, run_name)
     os.makedirs(case_dir, exist_ok=True)
     _drop_rate = case.get('drop_rate', case.get('dropout', 0.0))
     _pool_size = case.get('pool_size', 4)
     model_cfg = dict(in_ch=3, n_class=3, depths=case.get('depths', 5), filters_root=case.get('filters_root', 8), kernels=case.get('kernels', (7,)), pool_size=_pool_size, drop_rate=_drop_rate, use_cbam=case.get('use_cbam', False), use_separable=case.get('use_separable', False), fusion_mode=case.get('fusion_mode', 'concat'), fusion_gate_hidden=case.get('fusion_gate_hidden', 16), fusion_residual_scale=case.get('fusion_residual_scale', 0.3), fusion_use_maxpool=case.get('fusion_use_maxpool', True), softgate_scope=case.get('softgate_scope', 'all'), use_temporal_bifpn_asff=case.get('use_temporal_bifpn_asff', False), cbam_modulate_softgate=case.get('cbam_modulate_softgate', True), cbam_softgate_strength=float(case.get('cbam_softgate_strength', 1.0)))
-    print(f'[{case['name']}] Building model...', flush=True)
+    print(f"[{case['name']}] Building model...", flush=True)
     model_cls = MODEL_CLASS_MAP.get(case.get('model_class', 'PhaseNetUNet'), PhaseNetUNet)
     try:
         _sig = inspect.signature(model_cls.__init__)
@@ -2183,8 +2183,8 @@ def run_case(case: Dict[str, Any]):
     n_dropout = sum((1 for m in model.modules() if 'Dropout' in m.__class__.__name__))
     params = sum((p.numel() for p in model.parameters()))
     size_mb = params * 4.0 / 1024.0 ** 2
-    print(f'[{case['name']}] Model building completed, parameters: {params / 1000000.0:.2f}M (~{params / 1000.0:.1f}k), size≈{size_mb:.2f}MB', flush=True)
-    print(f'[{case['name']}] has_dropout_modules: {has_dropout}, dropout_count: {n_dropout}', flush=True)
+    print(f"[{case['name']}] Model building completed, parameters: {params / 1000000.0:.2f}M (~{params / 1000.0:.1f}k), size≈{size_mb:.2f}MB", flush=True)
+    print(f"[{case['name']}] has_dropout_modules: {has_dropout}, dropout_count: {n_dropout}", flush=True)
     total_epochs = EPOCHS
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
     if SCHEDULER == 'plateau':
@@ -2201,14 +2201,14 @@ def run_case(case: Dict[str, Any]):
     if eval_only:
         best_path = os.path.join(case_dir, 'best_model.pt')
         if os.path.exists(best_path):
-            print(f'[{case['name']}] eval_only=True,Loading the existing optimal model: {best_path}', flush=True)
+            print(f"[{case['name']}] eval_only=True,Loading the existing optimal model: {best_path}", flush=True)
             state = torch.load(best_path, map_location=device)
             model.load_state_dict(state)
             tr_hist = [0.0]
             va_hist = [0.0]
             best = 0.0
         else:
-            print(f'[{case['name']}] eval_only=True but no result was found. {best_path}, the normal training process will be carried out.', flush=True)
+            print(f"[{case['name']}] eval_only=True but no result was found. {best_path}, the normal training process will be carried out.", flush=True)
             eval_only = False
     if not eval_only:
         enable_early_stop = DATA_SOURCE == 'h5_three_channel'
@@ -2233,7 +2233,7 @@ def run_case(case: Dict[str, Any]):
                 bs = x.size(0)
                 total_tr += float(loss.item()) * bs
                 n_tr += bs
-                pbar.set_postfix({'loss': f'{total_tr / max(1, n_tr):.4f}', 'lr': f'{opt.param_groups[0]['lr']:.2e}'})
+                pbar.set_postfix({'loss': f'{total_tr / max(1, n_tr):.4f}', 'lr': f"{opt.param_groups[0]['lr']:.2e}"})
             tr_loss = total_tr / max(1, n_tr)
             va_loss = eval_loss(model, valid_loader, device, threshold_balance_weight=current_threshold_weight, class_weights=class_weights_tensor, epoch=ep, total_epochs=total_epochs)
             if scheduler is not None:
@@ -2265,30 +2265,30 @@ def run_case(case: Dict[str, Any]):
                 else:
                     no_improve_epochs += 1
             best_label = 'best_f1' if best_by_f1 else 'best_val'
-            print(f'[{case['name']}] epoch {ep:02d}/{total_epochs} train={tr_loss:.4f} valid={va_loss:.4f} {best_label}={best:.4f} lr={cur_lr:.2e}' + (f' no_improve={no_improve_epochs}/{H5_EARLY_STOP_PATIENCE}' if enable_early_stop else ''), flush=True)
+            print(f"[{case['name']}] epoch {ep:02d}/{total_epochs} train={tr_loss:.4f} valid={va_loss:.4f} {best_label}={best:.4f} lr={cur_lr:.2e}" + (f" no_improve={no_improve_epochs}/{H5_EARLY_STOP_PATIENCE}" if enable_early_stop else ""), flush=True)
             if enable_early_stop and no_improve_epochs >= H5_EARLY_STOP_PATIENCE:
-                print(f'[{case['name']}] EarlyStopping(H5) triggered: consecutive {H5_EARLY_STOP_PATIENCE} epochs showed no improvement and the training was prematurely terminated.', flush=True)
+                print(f"[{case['name']}] EarlyStopping(H5) triggered: consecutive {H5_EARLY_STOP_PATIENCE} epochs showed no improvement and the training was prematurely terminated.", flush=True)
                 break
     if best_state_dict is not None and (not eval_only):
         model.load_state_dict(best_state_dict)
         criterion = 'best_f1' if best_by_f1 else 'best_val_loss'
-        print(f'[{case['name']}] Evaluate using the best model from the validation set (best_epoch = {best_epoch}, {criterion} = {best:.4f})', flush=True)
+        print(f"[{case['name']}] Evaluate using the best model from the validation set (best_epoch = {best_epoch}, {criterion} = {best:.4f})", flush=True)
         best_path = os.path.join(case_dir, 'best_model.pt')
         torch.save(best_state_dict, best_path)
-        print(f'[{case['name']}] The optimal model has been saved: {best_path}', flush=True)
+        print(f"[{case['name']}] The optimal model has been saved: {best_path}", flush=True)
     use_mc_dropout_selective = case.get('use_mc_dropout_selective', False)
     fixed_thr_p = float(case.get('fixed_thr_p', 0.5))
     fixed_thr_s = float(case.get('fixed_thr_s', 0.5))
     if use_mc_dropout_selective:
-        print(f'[{case['name']}] Using MC Dropout + Selective Prediction (fixed threshold P={fixed_thr_p:.3f}, S={fixed_thr_s:.3f})', flush=True)
+        print(f"[{case['name']}] Using MC Dropout + Selective Prediction (fixed threshold P={fixed_thr_p:.3f}, S={fixed_thr_s:.3f})", flush=True)
         thr_p = fixed_thr_p
         thr_s = fixed_thr_s
         f1_p = f1_s = float('nan')
     else:
-        print(f'[{case['name']}] Using fixed threshold P = {fixed_thr_p:.3f} S = {fixed_thr_s:.3f} (Baseline mode)...', flush=True)
+        print(f"[{case['name']}] Using fixed threshold P = {fixed_thr_p:.3f} S = {fixed_thr_s:.3f} (Baseline mode)...", flush=True)
         thr_p = fixed_thr_p
         thr_s = fixed_thr_s
-        print(f'[{case['name']}] Checking the predicted probability distribution...', flush=True)
+        print(f"[{case['name']}] Checking the predicted probability distribution...", flush=True)
         model.eval()
         all_p_probs, all_s_probs = ([], [])
         with torch.inference_mode():
@@ -2309,13 +2309,13 @@ def run_case(case: Dict[str, Any]):
                         s_max_prob = float(np.max(probs[b, 2]))
                         all_s_probs.append(s_max_prob)
         if all_p_probs:
-            print(f'[{case['name']}] P-wave prediction probability statistics: mean={np.mean(all_p_probs):.3f}, std={np.std(all_p_probs):.3f}, min={np.min(all_p_probs):.3f}, max={np.max(all_p_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_p_probs) >= 0.5):.1%}', flush=True)
+            print(f"[{case['name']}] P-wave prediction probability statistics: mean={np.mean(all_p_probs):.3f}, std={np.std(all_p_probs):.3f}, min={np.min(all_p_probs):.3f}, max={np.max(all_p_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_p_probs) >= 0.5):.1%}", flush=True)
         if all_s_probs:
-            print(f'[{case['name']}] S-wave prediction probability statistics: mean={np.mean(all_s_probs):.3f}, std={np.std(all_s_probs):.3f}, min={np.min(all_s_probs):.3f}, max={np.max(all_s_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_s_probs) >= 0.5):.1%}', flush=True)
+            print(f"[{case['name']}] S-wave prediction probability statistics: mean={np.mean(all_s_probs):.3f}, std={np.std(all_s_probs):.3f}, min={np.min(all_s_probs):.3f}, max={np.max(all_s_probs):.3f}, Proportion exceeding 0.5={np.mean(np.array(all_s_probs) >= 0.5):.1%}", flush=True)
         (p_conf, p_err, p_has), (s_conf, s_err, s_has) = collect_conf_err(model, valid_loader, device)
         _, f1_p = best_threshold(p_conf, p_err, p_has, DYN_TOL_SAMPLES, [thr_p], debug=False)
         _, f1_s = best_threshold(s_conf, s_err, s_has, DYN_TOL_SAMPLES, [thr_s], debug=False)
-        print(f'[{case['name']}] fixed threshold: P={thr_p:.3f} (F1={f1_p:.4f}), S={thr_s:.3f} (F1={f1_s:.4f})', flush=True)
+        print(f"[{case['name']}] fixed threshold: P={thr_p:.3f} (F1={f1_p:.4f}), S={thr_s:.3f} (F1={f1_s:.4f})", flush=True)
     metrics_unc = None
     metrics_score = None
     metrics_gate = None
@@ -2332,9 +2332,9 @@ def run_case(case: Dict[str, Any]):
             cand_thr_s = float(case.get('mc_candidate_thr_s', 0.3))
             metrics_unc = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=True, candidate_thr_p=cand_thr_p, candidate_thr_s=cand_thr_s)
             try:
-                print(f'[{case['name']}] Two-level threshold + unc candidate control (Full indicator):', flush=True)
-                print(f'  baseline : P-Prec={metrics['p_prec']:.4f}, P-Rec={metrics['p_rec']:.4f}, P-F1={metrics['p_f1']:.4f}; S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
-                print(f'  unc-cand : P-Prec={metrics_unc['p_prec']:.4f}, P-Rec={metrics_unc['p_rec']:.4f}, P-F1={metrics_unc['p_f1']:.4f}; S-Prec={metrics_unc['s_prec']:.4f}, S-Rec={metrics_unc['s_rec']:.4f}, S-F1={metrics_unc['s_f1']:.4f}', flush=True)
+                print(f"[{case['name']}] Two-level threshold + unc candidate control (Full indicator):", flush=True)
+                print(f"  baseline : P-Prec={metrics['p_prec']:.4f}, P-Rec={metrics['p_rec']:.4f}, P-F1={metrics['p_f1']:.4f}; S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}", flush=True)
+                print(f"  unc-cand : P-Prec={metrics_unc['p_prec']:.4f}, P-Rec={metrics_unc['p_rec']:.4f}, P-F1={metrics_unc['p_f1']:.4f}; S-Prec={metrics_unc['s_prec']:.4f}, S-Rec={metrics_unc['s_rec']:.4f}, S-F1={metrics_unc['s_f1']:.4f}", flush=True)
             except Exception:
                 pass
         if case.get('mc_use_score_candidate_s', False):
@@ -2343,9 +2343,9 @@ def run_case(case: Dict[str, Any]):
             score_tau_unc_s = case.get('mc_score_tau_unc_s', None)
             metrics_score = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=False, candidate_thr_s=score_cand_thr_s, use_score_candidate_s=True, score_lambda_s=score_lambda_s, score_tau_unc_s=score_tau_unc_s)
             try:
-                print(f'[{case['name']}] S-score candidate control (Full indicators):(lambda_s={score_lambda_s:.2f}, cand_thr_s={score_cand_thr_s:.2f}, tau_unc_s={score_tau_unc_s})', flush=True)
-                print(f'  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
-                print(f'  score-cand: S-Prec={metrics_score['s_prec']:.4f}, S-Rec={metrics_score['s_rec']:.4f}, S-F1={metrics_score['s_f1']:.4f}', flush=True)
+                print(f"[{case['name']}] S-score candidate control (Full indicators):(lambda_s={score_lambda_s:.2f}, cand_thr_s={score_cand_thr_s:.2f}, tau_unc_s={score_tau_unc_s})", flush=True)
+                print(f"  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}", flush=True)
+                print(f"  score-cand: S-Prec={metrics_score['s_prec']:.4f}, S-Rec={metrics_score['s_rec']:.4f}, S-F1={metrics_score['s_f1']:.4f}", flush=True)
             except Exception:
                 pass
         if case.get('mc_use_unc_gating_s', False):
@@ -2354,9 +2354,9 @@ def run_case(case: Dict[str, Any]):
             gate_base_s = case.get('mc_unc_gating_base_s', None)
             metrics_gate = eval_detailed_mc_selective(model, valid_loader, device, thr_p=thr_p, thr_s=thr_s, mc_T=mc_T, drop_ratio=drop_ratio, coverage_points=coverage_points, tol=DYN_TOL_SAMPLES, structural_opts=None, quiet=True, eval_seed=eval_seed, use_two_level_candidate=False, use_score_candidate_s=False, use_unc_gating_s=True, unc_gating_tau_s=gate_tau_s, unc_gating_k_s=gate_k_s, unc_gating_base_s=gate_base_s)
             try:
-                print(f'[{case['name']}] S-unc gating control (Full indicators):(tau_unc_s={gate_tau_s}, k_s={gate_k_s}, base_s={gate_base_s})', flush=True)
-                print(f'  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}', flush=True)
-                print(f'  unc-gate : S-Prec={metrics_gate['s_prec']:.4f}, S-Rec={metrics_gate['s_rec']:.4f}, S-F1={metrics_gate['s_f1']:.4f}', flush=True)
+                print(f"[{case['name']}] S-unc gating control (Full indicators):(tau_unc_s={gate_tau_s}, k_s={gate_k_s}, base_s={gate_base_s})", flush=True)
+                print(f"  baseline : S-Prec={metrics['s_prec']:.4f}, S-Rec={metrics['s_rec']:.4f}, S-F1={metrics['s_f1']:.4f}", flush=True)
+                print(f"  unc-gate : S-Prec={metrics_gate['s_prec']:.4f}, S-Rec={metrics_gate['s_rec']:.4f}, S-F1={metrics_gate['s_f1']:.4f}", flush=True)
             except Exception:
                 pass
     if isinstance(metrics_mc, dict) and 'mc_uncertainty' in metrics_mc:
@@ -2372,7 +2372,7 @@ def run_case(case: Dict[str, Any]):
     test_loader_for_vis = None
     if RUN_TEST_EVAL and test_ds is not None:
         try:
-            print(f'[{case['name']}] Evaluation on the independent test set (no further parameter tuning, only forward calculation of metrics)...', flush=True)
+            print(f"[{case['name']}] Evaluation on the independent test set (no further parameter tuning, only forward calculation of metrics)...", flush=True)
             g_test = torch_generator(SEED + 2)
             test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=NUM_WORKERS, pin_memory=False, worker_init_fn=seed_worker, generator=g_test)
             test_metrics = eval_detailed(model, test_loader, device, thr_p=thr_p, thr_s=thr_s, uncertainty_threshold_options=case, current_epoch=total_epochs, tol=DYN_TOL_SAMPLES)
@@ -2380,10 +2380,10 @@ def run_case(case: Dict[str, Any]):
             def _fmt_res_t(key: str) -> str:
                 v = test_metrics.get(key)
                 return f'{float(v):.4f}' if v is not None else 'N/A'
-            print(f'[{case['name']}] TEST result: time_acc={test_metrics.get('time_acc', float('nan')):.4f}, P-Prec={test_metrics.get('p_prec', float('nan')):.4f}, P-Rec={test_metrics.get('p_rec', float('nan')):.4f}, P-F1={test_metrics.get('p_f1', float('nan')):.4f}, S-Prec={test_metrics.get('s_prec', float('nan')):.4f}, S-Rec={test_metrics.get('s_rec', float('nan')):.4f}, S-F1={test_metrics.get('s_f1', float('nan')):.4f} | p_res(mean/std/mae)s=({_fmt_res_t('p_res_mean_sec')}/{_fmt_res_t('p_res_std_sec')}/{_fmt_res_t('p_res_mae_sec')}), s_res=({_fmt_res_t('s_res_mean_sec')}/{_fmt_res_t('s_res_std_sec')}/{_fmt_res_t('s_res_mae_sec')})', flush=True)
+            print(f"[{case['name']}] TEST result: time_acc={test_metrics.get('time_acc', float('nan')):.4f}, P-Prec={test_metrics.get('p_prec', float('nan')):.4f}, P-Rec={test_metrics.get('p_rec', float('nan')):.4f}, P-F1={test_metrics.get('p_f1', float('nan')):.4f}, S-Prec={test_metrics.get('s_prec', float('nan')):.4f}, S-Rec={test_metrics.get('s_rec', float('nan')):.4f}, S-F1={test_metrics.get('s_f1', float('nan')):.4f} | p_res(mean/std/mae)s=({_fmt_res_t('p_res_mean_sec')}/{_fmt_res_t('p_res_std_sec')}/{_fmt_res_t('p_res_mae_sec')}), s_res=({_fmt_res_t('s_res_mean_sec')}/{_fmt_res_t('s_res_std_sec')}/{_fmt_res_t('s_res_mae_sec')})", flush=True)
             test_loader_for_vis = test_loader
         except Exception as e:
-            print(f'[{case['name']}] The evaluation failed on the test set ({e}), and only the validation set metrics are retained.', flush=True)
+            print(f"[{case['name']}] The evaluation failed on the test set ({e}), and only the validation set metrics are retained.", flush=True)
     case_dir = os.path.join(OUT_ROOT, run_name)
     os.makedirs(case_dir, exist_ok=True)
     if use_mc_dropout_selective and isinstance(metrics_mc, dict) and (metrics_mc.get('risk_coverage') is not None):
@@ -2409,9 +2409,9 @@ def run_case(case: Dict[str, Any]):
             try:
                 overview_path = os.path.join(case_dir, 'uncertainty_overview_grid.png')
                 plot_uncertainty_overview_grid(metrics_mc['risk_coverage'], ue_export, overview_path, num_bins=10)
-                print(f'[{case['name']}] generated: {overview_path}', flush=True)
+                print(f"[{case['name']}] generated: {overview_path}", flush=True)
             except Exception as e:
-                print(f'[{case['name']}] Failed to generate the file "uncertainty_overview_grid.png". {e}', flush=True)
+                print(f"[{case['name']}] Failed to generate the file \"uncertainty_overview_grid.png\". {e}", flush=True)
         n_samples = len(metrics_mc['mc_uncertainty'])
         unc_arr = np.array(metrics_mc['mc_uncertainty'], dtype=np.float64)
         etp: list[str] = metrics_mc['mc_error_type_p']
@@ -2573,7 +2573,7 @@ def run_case(case: Dict[str, Any]):
                 np.savez(os.path.join(case_dir, 'pca_ours.npz'), features=features, labels=labels, allow_pickle=True)
                 plot_pca_visualization(features, labels, os.path.join(case_dir, 'pca_visualization.png'), label_names=['BG window', 'P window', 'S window'])
         except Exception as e:
-            print(f'[{case['name']}] PCA visualization skipped（{e}）', flush=True)
+            print(f"[{case['name']}] PCA visualization skipped（{e}）", flush=True)
     if plt is not None and case.get('generate_visualizations', True):
         try:
             pr_snr = collect_pr_snr_data(model, valid_loader, device, tol_samples=DYN_TOL_SAMPLES)
@@ -2587,12 +2587,12 @@ def run_case(case: Dict[str, Any]):
                 plot_snr_stratified(pr_snr, os.path.join(case_dir, 'snr_stratified.png'), fixed_thr=0.5)
                 plot_max_prob_histogram(pr_snr, os.path.join(case_dir, 'max_prob_histogram.png'), bins=15)
         except Exception as e:
-            print(f'[{case['name']}] PR/SNR graph skipped（{e}）', flush=True)
+            print(f"[{case['name']}] PR/SNR graph skipped（{e}）", flush=True)
     generate_visualizations = case.get('generate_visualizations', True)
     if plt is not None:
         plot_losses(tr_hist, va_hist, os.path.join(case_dir, 'loss_curve.png'))
     if plt is not None and generate_visualizations:
-        print(f'[{case['name']}] generate sample visualization... ', flush=True)
+        print(f"[{case['name']}] generate sample visualization... ", flush=True)
         save_visuals(model, valid_ds, device, os.path.join(case_dir, 'figs'), n=N_VIS)
         try:
             rep_out = os.path.join(case_dir, 'representative_waveforms_2x2.png')
@@ -2606,11 +2606,11 @@ def run_case(case: Dict[str, Any]):
             save_representative_waveforms_2x2(model, valid_loader, device, out_path=rep_out, tol=DYN_TOL_SAMPLES, thr_p=float(case.get('fixed_thr_p', 0.5)), thr_s=float(case.get('fixed_thr_s', 0.5)), max_scan_samples=int(case.get('rep_waveform_max_scan', 2000)), extra_loaders=extra_rep_loaders, rep_npz_path=rep_npz)
         except Exception:
             pass
-        print(f'[ {case['name']} ] Visualization chart generation completed (loss_curve.png + figs/vis_*.png)', flush=True)
+        print(f"[ {case['name']} ] Visualization chart generation completed (loss_curve.png + figs/vis_*.png)", flush=True)
     elif plt is None:
-        print(f'[{case['name']}] Skip generation of visualization charts (matplotlib is not available)', flush=True)
+        print(f"[{case['name']}] Skip generation of visualization charts (matplotlib is not available)", flush=True)
     elif not generate_visualizations:
-        print(f'[{case['name']}] loss_curve.png has been output. Skipping sample visualization (generate_visualizations=False)', flush=True)
+        print(f"[{case['name']}] loss_curve.png has been output. Skipping sample visualization (generate_visualizations=False)", flush=True)
     extra_unc_fields: Dict[str, Any] = {}
     if metrics_unc is not None:
         try:
@@ -2643,7 +2643,7 @@ def run_case(case: Dict[str, Any]):
     if DATA_SOURCE == 'ceed' and (not row_name.endswith('_ceed')):
         row_name = f'{row_name}_ceed'
     row = dict(name=row_name, best_val=best, train_last=tr_hist[-1], valid_last=va_hist[-1], use_cbam=case['use_cbam'], kernels=list(case['kernels']), thr_p=thr_p, thr_s=thr_s, f1_p=float(metrics_full['p_f1']), f1_s=float(metrics_full['s_f1']), **metrics, **extra_unc_fields, **extra_score_fields, **extra_gate_fields)
-    print(f'[{case['name']}] Training and evaluation completed. Final result: P-F1={metrics_full['p_f1']:.4f}, S-F1={metrics_full['s_f1']:.4f}', flush=True)
+    print(f"[{case['name']}] Training and evaluation completed. Final result: P-F1={metrics_full['p_f1']:.4f}, S-F1={metrics_full['s_f1']:.4f}", flush=True)
     return row
 
 def log_split_info(case_name: str, train_size: int, valid_size: int, seed_value: int=SEED):
@@ -2660,10 +2660,10 @@ def append_csv(path: str, header: list[str], rows: list[Dict[str, Any]]):
         if write_header:
             w.writerow(header)
         for r in rows:
-            thr_p_str = f'{r['thr_p']:.2f}' if r.get('thr_p') is not None else 'N/A'
-            thr_s_str = f'{r['thr_s']:.2f}' if r.get('thr_s') is not None else 'N/A'
+            thr_p_str = f"{r['thr_p']:.2f}" if r.get('thr_p') is not None else 'N/A'
+            thr_s_str = f"{r['thr_s']:.2f}" if r.get('thr_s') is not None else 'N/A'
 
             def _fmt_res(key: str) -> str:
                 v = r.get(key, None)
                 return f'{float(v):.4f}' if v is not None else 'N/A'
-            w.writerow([r['name'], f'{r['best_val']:.6f}', f'{r['train_last']:.6f}', f'{r['valid_last']:.6f}', r['use_cbam'], r['kernels'], thr_p_str, thr_s_str, f'{r['time_acc']:.4f}', f'{r.get('mcc', 0.0):.4f}', f'{r['p_prec']:.4f}', f'{r['p_rec']:.4f}', f'{r['p_f1']:.4f}', f'{r['s_prec']:.4f}', f'{r['s_rec']:.4f}', f'{r['s_f1']:.4f}', _fmt_res('p_res_mean_sec'), _fmt_res('p_res_std_sec'), _fmt_res('p_res_mae_sec'), _fmt_res('s_res_mean_sec'), _fmt_res('s_res_std_sec'), _fmt_res('s_res_mae_sec')])
+            w.writerow([r['name'], f"{r['best_val']:.6f}", f"{r['train_last']:.6f}", f"{r['valid_last']:.6f}", r['use_cbam'], r['kernels'], thr_p_str, thr_s_str, f"{r['time_acc']:.4f}", f"{r.get('mcc', 0.0):.4f}", f"{r['p_prec']:.4f}", f"{r['p_rec']:.4f}", f"{r['p_f1']:.4f}", f"{r['s_prec']:.4f}", f"{r['s_rec']:.4f}", f"{r['s_f1']:.4f}", _fmt_res('p_res_mean_sec'), _fmt_res('p_res_std_sec'), _fmt_res('p_res_mae_sec'), _fmt_res('s_res_mean_sec'), _fmt_res('s_res_std_sec'), _fmt_res('s_res_mae_sec')])

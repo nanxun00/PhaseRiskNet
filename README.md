@@ -28,6 +28,10 @@ Common arguments:
 | `--include-ablation` | Run the ablation configurations defined in `phase_run.py` (e.g., `phasenet_full_big`, `phasenet_full_small`) |
 | `--quick` | Quick test run (fewer epochs; relies on the quick-path logic in `phase_core`) |
 | `--gpu 0` | Use a specific GPU only (sets `CUDA_VISIBLE_DEVICES`) |
+| `--data-source ceed` | Explicitly select the dataset backend (`ceed`, `h5_three_channel`, or `npz`) |
+| `--ceed-local-dir /path/to/ceed_local` | Explicit CEED local directory containing `*.h5` files (overrides `CEED_LOCAL_DIR`) |
+| `--ceed-cache-dir /path/to/hf_cache` | Explicit Hugging Face cache directory (overrides `CEED_CACHE_DIR`) |
+| `--h5-root /path/to/h5_root` | Explicit three-channel H5 root directory (overrides `H5_THREE_CHANNEL_ROOT`) |
 | `--ablation-keys phasenet_full_big,phasenet_full_small` | Run only the listed configuration keys (comma-separated) |
 | `--skip-baseline` | Skip the baseline (if `phasenet_baseline` is not defined in configs, it will be skipped automatically) |
 | `--seed` | Random seed (defaults to the value of `PHASENET_SEED` below) |
@@ -36,6 +40,33 @@ Example:
 
 ```bash
 python phase_run.py --include-ablation --quick --gpu 0
+```
+
+Example (CEED from a local directory, with an explicit Hugging Face cache path):
+
+```bash
+python phase_run.py --include-ablation --gpu 0 \
+  --data-source ceed \
+  --ceed-local-dir "/data/ceed_local" \
+  --ceed-cache-dir "/data/hf_cache"
+```
+
+Example (three-channel H5 backend):
+
+```bash
+python phase_run.py --include-ablation --gpu 0 \
+  --data-source h5_three_channel \
+  --h5-root "/data/diting_h5_root"
+```
+
+Example (`nohup` on a server):
+
+```bash
+nohup python phase_run.py --include-ablation --gpu 1 \
+  --data-source ceed \
+  --ceed-local-dir "/data/ceed_local" \
+  --ceed-cache-dir "/data/hf_cache" \
+  > run.log 2>&1 &
 ```
 
 ## Data
@@ -55,4 +86,7 @@ To avoid hard-coding local paths and random seeds in code, set environment varia
 | `CEED_LOCAL_DIR` | Local directory containing CEED `.h5` data; if empty, relies on `datasets` to download/cache-load |
 | `H5_THREE_CHANNEL_ROOT` | Root directory of three-channel H5 data (required when `phase_core.py` uses `DATA_SOURCE == "h5_three_channel"`) |
 
-Data source types such as `DATA_ROOT` and `DATA_SOURCE` are still configured in **`phase_core.py`** as needed.
+Notes:
+
+- If you pass `--data-source/--ceed-local-dir/--ceed-cache-dir/--h5-root`, these CLI flags take priority over environment variables.
+- If you do not pass CLI flags, the project falls back to environment variables and the defaults in `phase_core.py`.

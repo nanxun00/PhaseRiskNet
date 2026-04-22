@@ -25,7 +25,7 @@ class CEEDDataset(Dataset):
             h5_files = sorted(glob(os.path.join(local_dir, '*.h5')))
             if h5_files:
                 print(f'Using local dataset: {local_dir}')
-                print(f'Found {len(h5_files)} H5 files: {[os.path.basename(f) for f in h5_files[:3]]}{('...' if len(h5_files) > 3 else '')}')
+                print(f"Found {len(h5_files)} H5 files: {[os.path.basename(f) for f in h5_files[:3]]}{('...' if len(h5_files) > 3 else '')}")
             else:
                 print(f'Warning: No .h5 files found in local directory {local_dir}')
                 print(f'Will attempt to download from network (if available)')
@@ -73,7 +73,7 @@ class CEEDDataset(Dataset):
                                             arrow_files.append(os.path.join(root, f))
                                 if arrow_files:
                                     print(f'Found {len(arrow_files)} .arrow files (may be incomplete)')
-                                    print(f'Example: {(arrow_files[0] if arrow_files else 'N/A')}')
+                                    print(f"Example: {(arrow_files[0] if arrow_files else 'N/A')}")
                                 else:
                                     print('No .arrow files found')
                             except Exception as diag_err:

@@ -1,8 +1,6 @@
 import os
 import argparse
-from typing import Dict
-from phase_core import run_case, append_csv, METRICS_CSV, METRICS_HEADER, SEED
-import phase_core as core
+from typing import Dict, Any
 from utils.repro import seed_everything
 
 def print_separator(title: str=''):
@@ -15,20 +13,20 @@ def print_separator(title: str=''):
 ABLATION_CONFIGS: Dict[str, Dict] = {'phasenet_full_big': {'name': 'phasenet_full_big', 'model_class': 'PhaseNetUNet', 'depths': 5, 'filters_root': 8, 'kernels': (3, 7, 15), 'pool_size': 4, 'drop_rate': 0.1, 'use_cbam': True, 'use_separable': False, 'fusion_mode': 'softgate_residual', 'fusion_gate_hidden': 16, 'fusion_residual_scale': 0.3, 'fusion_use_maxpool': True, 'softgate_scope': 'deep', 'use_phasewise_loss': False, 'use_ttversky_loss': True, 'tt_loss_weight': 0.5, 'tt_time_weight': 0.3, 'tt_start_weight': 0.4, 'tt_temporal_att_weight': 0.1, 'tt_start_window': 2, 'tt_start_peak_threshold': 0.2, 'tt_alpha_p': 0.7, 'tt_beta_p': 0.3, 'tt_alpha_s': 0.8, 'tt_beta_s': 0.2, 'fixed_thr_p': 0.5, 'fixed_thr_s': 0.5, 'use_mc_dropout_selective': True, 'mc_dropout_n_samples': 20, 'mc_selective_drop_ratio': 0.1, 'mc_risk_coverage_points': 20, 'use_temporal_bifpn_asff': True, 'eval_only': False}, 'phasenet_full_small': {'name': 'phasenet_full_small', 'model_class': 'PhaseNetUNet', 'depths': 5, 'filters_root': 8, 'kernels': (3, 7, 15), 'pool_size': 4, 'drop_rate': 0.1, 'use_cbam': True, 'use_separable': True, 'fusion_mode': 'softgate_residual', 'fusion_gate_hidden': 16, 'fusion_residual_scale': 0.3, 'fusion_use_maxpool': True, 'softgate_scope': 'deep', 'use_phasewise_loss': False, 'use_ttversky_loss': True, 'tt_loss_weight': 0.5, 'tt_time_weight': 0.3, 'tt_start_weight': 0.4, 'tt_temporal_att_weight': 0.1, 'tt_start_window': 2, 'tt_start_peak_threshold': 0.2, 'tt_alpha_p': 0.7, 'tt_beta_p': 0.3, 'tt_alpha_s': 0.8, 'tt_beta_s': 0.2, 'fixed_thr_p': 0.5, 'fixed_thr_s': 0.5, 'use_mc_dropout_selective': True, 'mc_dropout_n_samples': 20, 'mc_selective_drop_ratio': 0.1, 'mc_risk_coverage_points': 20, 'use_temporal_bifpn_asff': True, 'eval_only': False}}
 
 
-def run_test(config: Dict, quick_mode: bool=False) -> Dict:
-    print_separator(f'Test: {config['name']}')
-    print(f'[{config['name']}] Preparing data and model...', flush=True)
+def run_test(config: Dict[str, Any], core, quick_mode: bool=False) -> Dict:
+    print_separator(f"Test: {config['name']}")
+    print(f"[{config['name']}] Preparing data and model...", flush=True)
     if quick_mode:
         print('⚠️  Quick mode: small dataset + few epochs', flush=True)
         _ep = core.EPOCHS
         core.EPOCHS = 5
         try:
-            result = run_case(config)
+            result = core.run_case(config)
         finally:
             core.EPOCHS = _ep
     else:
-        result = run_case(config)
-    print(f'[{config['name']}] Completed.', flush=True)
+        result = core.run_case(config)
+    print(f"[{config['name']}] Completed.", flush=True)
     return result
 
 def main():
@@ -39,17 +37,35 @@ def main():
     parser = argparse.ArgumentParser(description='PhaseNetUNet backbone ablation test')
     parser.add_argument('--quick', action='store_true', help='Quick test (small data, few epochs)')
     parser.add_argument('--gpu', type=str, default=None, help='GPU ID, such as 0 or 0,1,2,3 (set CUDA_VISIBLE_DEVICES)')
+    parser.add_argument('--data-source', type=str, default=None, choices=['ceed', 'h5_three_channel', 'npz'], help="Explicit dataset source (override phase_core.DATA_SOURCE)")
+    parser.add_argument('--ceed-local-dir', type=str, default=None, help='Explicit CEED local directory containing *.h5 (override CEED_LOCAL_DIR env)')
+    parser.add_argument('--ceed-cache-dir', type=str, default=None, help='Explicit HuggingFace datasets cache dir (override CEED_CACHE_DIR env)')
+    parser.add_argument('--h5-root', type=str, default=None, help='Explicit three-channel H5 dataset root (override H5_THREE_CHANNEL_ROOT env)')
     parser.add_argument('--include-ablation', action='store_true', help='Whether to run ablation configurations (excluding baseline)')
     parser.add_argument('--ablation-keys', type=str, default=None, help='Run only specified keys, comma-separated')
     parser.add_argument('--skip-baseline', action='store_true', help='Run only ablation configurations, skip baseline')
-    parser.add_argument('--seed', type=int, default=SEED, help='Global random seed')
+    parser.add_argument('--seed', type=int, default=None, help='Global random seed (default from PHASENET_SEED/phase_core.SEED)')
     args = parser.parse_args()
+
+    # Apply explicit config BEFORE importing phase_core (phase_core reads env on import)
+    if args.ceed_cache_dir:
+        os.environ['CEED_CACHE_DIR'] = str(args.ceed_cache_dir)
+    if args.ceed_local_dir:
+        os.environ['CEED_LOCAL_DIR'] = str(args.ceed_local_dir)
+    if args.h5_root:
+        os.environ['H5_THREE_CHANNEL_ROOT'] = str(args.h5_root)
+
+    import phase_core as core
+    if args.data_source is not None:
+        core.DATA_SOURCE = str(args.data_source)
     if args.gpu is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
         print(f'[phase] Specified visible GPU: {args.gpu}', flush=True)
-    core.SEED = args.seed
-    print(f'[phase] Using random seed: {args.seed}', flush=True)
-    seed_everything(args.seed, deterministic=True)
+    if args.seed is None:
+        args.seed = core.SEED
+    core.SEED = int(args.seed)
+    print(f'[phase] Using random seed: {core.SEED}', flush=True)
+    seed_everything(core.SEED, deterministic=True)
     results: Dict[str, Dict] = {}
     if args.skip_baseline:
         print('Step 1: --skip-baseline specified, skipping PhaseNet Baseline.', flush=True)
@@ -57,8 +73,8 @@ def main():
         print('Step 1: phasenet_baseline configuration not found, automatically skipping baseline.', flush=True)
     else:
         print_separator('Step 1: PhaseNet Baseline')
-        results['baseline'] = run_test(ABLATION_CONFIGS['phasenet_baseline'], quick_mode=args.quick)
-        append_csv(METRICS_CSV, METRICS_HEADER, [results['baseline']])
+        results['baseline'] = run_test(ABLATION_CONFIGS['phasenet_baseline'], core=core, quick_mode=args.quick)
+        core.append_csv(core.METRICS_CSV, core.METRICS_HEADER, [results['baseline']])
     test_configs: Dict[str, Dict] = {}
     if args.include_ablation:
         print_separator('Step 2: Ablation Experiments (PhaseNet Extended)')
@@ -77,8 +93,8 @@ def main():
         print('Step 2: --include-ablation not specified, skipping ablation.')
     for key, cfg in test_configs.items():
         print(f'\nTest: {key}')
-        results[key] = run_test(cfg, quick_mode=args.quick)
-        append_csv(METRICS_CSV, METRICS_HEADER, [results[key]])
+        results[key] = run_test(cfg, core=core, quick_mode=args.quick)
+        core.append_csv(core.METRICS_CSV, core.METRICS_HEADER, [results[key]])
     print_separator('Testing complete')
 
 
